@@ -1,0 +1,25 @@
+name: ayanami
+version: 0.1.0
+
+# authors:
+#   - name <email@example.com>
+
+# description: |
+#   Short description of ayanami
+
+# dependencies:
+#   pg:
+#     github: will/crystal-pg
+#     version: "~> 0.5"
+dependencies:
+  crystaledge:
+    github: unn4m3d/crystaledge
+  stumpy_png:
+    github: stumpycr/stumpy_png
+    version: "~> 5.0"
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr
+
+# license: MIT

@@ -1,0 +1,12 @@
+---
+version: 1.0
+shards:
+  crystaledge:
+    git: https://github.com/unn4m3d/crystaledge.git
+    version: 0.2.3
+  stumpy_core:
+    git: https://github.com/stumpycr/stumpy_core.git
+    version: 1.9.1
+  stumpy_png:
+    git: https://github.com/stumpycr/stumpy_png.git
+    version: 5.0.0
