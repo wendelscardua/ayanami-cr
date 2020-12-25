@@ -49,6 +49,6 @@ class Noise < Texture
   end
 
   def value(u : Float64, v : Float64, p : V3)
-    WHITE * perlin.noise(p * scale)
+    WHITE * 0.5 * (1.0 + perlin.noise(p * scale))
   end
 end
