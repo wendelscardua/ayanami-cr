@@ -13,6 +13,9 @@ end
 abstract class Hittable
   def hit(ray : Ray, t_min : Float, t_max : Float) : HitRecord?
   end
+
+  def bounding_box : AABB?
+  end
 end
 
 class Sphere < Hittable
@@ -51,6 +54,14 @@ class Sphere < Hittable
                   normal: (p - center) * (1.0 / radius),
                   ray: ray
   end
+
+  def bounding_box
+    r_vector = V3.new(radius, radius, radius)
+    AABB.new(
+      center - r_vector,
+      center + r_vector
+    )
+  end
 end
 
 class HittableList < Hittable
@@ -76,6 +87,24 @@ class HittableList < Hittable
       end
     end
     hit_record
+  end
+
+  def bounding_box
+    return nil if objects.empty?
+
+    box = nil
+    objects.each do |object|
+      object_box = object.bounding_box
+      return nil if object_box.nil?
+
+      if box.nil?
+        box = object_box
+      else
+        box = AABB.surrounding_box(box, object_box)
+      end
+    end
+
+    box
   end
 end
 
