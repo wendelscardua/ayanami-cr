@@ -2,6 +2,27 @@ abstract class Texture
   def value(u : Float64, v : Float64, p : V3) : V3
     raise "Not Implemented"
   end
+
+  def self.from_yaml(yaml : YAML::Any, textures : Hash(String, Texture))
+    texture_type = yaml["type"].as_s
+    case texture_type
+    when "solid_color"
+      color = V3.from_yaml(yaml["color"])
+      SolidColor.new(color)
+    when "checker"
+      odd = yaml["odd"].as_s
+      even = yaml["even"].as_s
+      Checker.new(textures[odd], textures[even])
+    when "noise"
+      scale = yaml["scale"].as_f
+      Noise.new(scale)
+    when "image"
+      filename = yaml["filename"].as_s
+      ImageTexture.new(filename)
+    else
+      raise "Invalid texture type #{texture_type}"
+    end
+  end
 end
 
 class SolidColor < Texture

@@ -108,88 +108,19 @@ camera = Camera.new(
 textures = Hash(String, Texture).new
 
 config["textures"].as_h.each do |name, args|
-  texture_type = args["type"].as_s
-  textures[name.as_s] = case texture_type
-                        when "solid_color"
-                          color = V3.from_yaml(args["color"])
-                          SolidColor.new(color)
-                        when "checker"
-                          odd = args["odd"].as_s
-                          even = args["even"].as_s
-                          Checker.new(textures[odd], textures[even])
-                        when "noise"
-                          scale = args["scale"].as_f
-                          Noise.new(scale)
-                        when "image"
-                          filename = args["filename"].as_s
-                          ImageTexture.new(filename)
-                        else
-                          raise "Invalid texture type #{texture_type}"
-                        end
+  textures[name.as_s] = Texture.from_yaml(args, textures: textures)
 end
 
 materials = Hash(String, Material).new
 
 config["materials"].as_h.each do |name, args|
-  material_type = args["type"].as_s
-  materials[name.as_s] = case material_type
-                         when "lambertian"
-                           albedo = textures[args["albedo"].as_s]
-                           Lambertian.new(albedo)
-                         when "dielectric"
-                           refraction_index = args["refraction_index"].as_f
-                           Dielectric.new(refraction_index)
-                         when "metal"
-                           albedo = V3.from_yaml(args["albedo"])
-                           fuzz = args["fuzz"].as_f
-                           Metal.new(albedo, fuzz)
-                         when "diffuse_light"
-                           texture = textures[args["texture"].as_s]
-                           DiffuseLight.new(texture)
-                         else
-                           raise "Invalid material type #{material_type}"
-                         end
+  materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
 end
 
 world = HittableList.new
 
 config["world"].as_a.each do |object|
-  object_type = object["type"].as_s
-  object = case object_type
-           when "sphere"
-             center = V3.from_yaml(object["center"])
-             radius = object["radius"].as_f
-             material = object["material"].as_s
-             Sphere.new(center, radius, materials[material])
-           when "xyrect"
-             XYRect.new(object["x0"].as_f,
-                        object["x1"].as_f,
-                        object["y0"].as_f,
-                        object["y1"].as_f,
-                        object["k"].as_f,
-                        materials[object["material"].as_s])
-           when "xzrect"
-             XZRect.new(object["x0"].as_f,
-                        object["x1"].as_f,
-                        object["z0"].as_f,
-                        object["z1"].as_f,
-                        object["k"].as_f,
-                        materials[object["material"].as_s])
-           when "yzrect"
-             YZRect.new(object["y0"].as_f,
-                        object["y1"].as_f,
-                        object["z0"].as_f,
-                        object["z1"].as_f,
-                        object["k"].as_f,
-                        materials[object["material"].as_s])
-           when "box"
-             HittableBox.new(V3.from_yaml(object["minimum"]),
-                             V3.from_yaml(object["maximum"]),
-                             materials[object["material"].as_s])
-           else
-             raise "Invalid object type #{object_type}"
-           end
-  world << object
+  world << Hittable.from_yaml(yaml: object, materials: materials)
 end
 
 ayanami = Ayanami.new width: width, height: height,

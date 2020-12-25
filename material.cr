@@ -25,6 +25,27 @@ abstract class Material
     r0 *= r0
     r0 + (1 - r0) * (1 - cosine)**5
   end
+
+  def self.from_yaml(yaml : YAML::Any, textures : Hash(String, Texture))
+    material_type = yaml["type"].as_s
+    case material_type
+    when "lambertian"
+      albedo = textures[yaml["albedo"].as_s]
+      Lambertian.new(albedo)
+    when "dielectric"
+      refraction_index = yaml["refraction_index"].as_f
+      Dielectric.new(refraction_index)
+    when "metal"
+      albedo = V3.from_yaml(yaml["albedo"])
+      fuzz = yaml["fuzz"].as_f
+      Metal.new(albedo, fuzz)
+    when "diffuse_light"
+      texture = textures[yaml["texture"].as_s]
+      DiffuseLight.new(texture)
+    else
+      raise "Invalid material type #{material_type}"
+    end
+  end
 end
 
 class Lambertian < Material

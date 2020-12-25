@@ -20,6 +20,44 @@ abstract class Hittable
 
   def bounding_box : AABB?
   end
+
+  def self.from_yaml(yaml : YAML::Any, materials : Hash(String, Material))
+    object_type = yaml["type"].as_s
+    case object_type
+    when "sphere"
+      center = V3.from_yaml(yaml["center"])
+      radius = yaml["radius"].as_f
+      material = yaml["material"].as_s
+      Sphere.new(center, radius, materials[material])
+    when "xyrect"
+      XYRect.new(yaml["x0"].as_f,
+                 yaml["x1"].as_f,
+                 yaml["y0"].as_f,
+                 yaml["y1"].as_f,
+                 yaml["k"].as_f,
+                 materials[yaml["material"].as_s])
+    when "xzrect"
+      XZRect.new(yaml["x0"].as_f,
+                 yaml["x1"].as_f,
+                 yaml["z0"].as_f,
+                 yaml["z1"].as_f,
+                 yaml["k"].as_f,
+                 materials[yaml["material"].as_s])
+    when "yzrect"
+      YZRect.new(yaml["y0"].as_f,
+                 yaml["y1"].as_f,
+                 yaml["z0"].as_f,
+                 yaml["z1"].as_f,
+                 yaml["k"].as_f,
+                 materials[yaml["material"].as_s])
+    when "box"
+      HittableBox.new(V3.from_yaml(yaml["minimum"]),
+                      V3.from_yaml(yaml["maximum"]),
+                      materials[yaml["material"].as_s])
+    else
+      raise "Invalid object type #{object_type}"
+    end
+  end
 end
 
 class Sphere < Hittable
