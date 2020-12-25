@@ -81,6 +81,44 @@ class Sphere < Hittable
   end
 end
 
+class XYRect < Hittable
+  getter x0 : Float64, x1 : Float64, y0 : Float64, y1 : Float64, k : Float64,
+         material : Material
+
+  def initialize(x0, x1, y0, y1, k, material)
+    @x0 = x0
+    @x1 = x1
+    @y0 = y0
+    @y1 = y1
+    @k = k
+    @material = material
+  end
+
+  OUTWARD_NORMAL = V3.new(0, 0, 1)
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    t = (k - ray.origin.z) / ray.direction.z
+    return nil if (t < t_min || t > t_max)
+
+    x = ray.origin.x + t * ray.direction.x
+    y = ray.origin.y + t * ray.direction.y
+
+    return nil if (x < x0 || x > x1 || y < y0 || y > y1)
+
+    HitRecord.new t: t,
+                  p: ray.at(t),
+                  material: material,
+                  normal: OUTWARD_NORMAL,
+                  ray: ray,
+                  u: (x - x0) / (x1 - x0),
+                  v: (y - y0) / (y1 - y0)
+  end
+
+  def bounding_box
+    AABB.new(V3.new(x0, y0, k - 0.0001), V3.new(x1, y1, k + 0.0001))
+  end
+end
+
 class HittableList < Hittable
   getter objects
   
