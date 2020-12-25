@@ -12,10 +12,41 @@ class Perlin
   end
 
   def noise(p : V3) : Float64
-    i = (4 * p.x).to_i & 255;
-    j = (4 * p.y).to_i & 255;
-    k = (4 * p.z).to_i & 255;
+    u = p.x - p.x.floor
+    v = p.y - p.y.floor
+    w = p.z - p.z.floor
 
-    return ranfloat[perm_x[i] ^ perm_y[j] ^ perm_z[k]]
+    i = p.x.floor.to_i
+    j = p.y.floor.to_i
+    k = p.z.floor.to_i
+
+    c = Array.new(2) { Array.new(3) { Array.new(3) { 0.0 } } }
+
+    (0..1).each do |di|
+      (0..1).each do |dj|
+        (0..1).each do |dk|
+          c[di][dj][dk] = ranfloat[perm_x[(i + di) & 255] ^
+                                   perm_y[(j + dj) & 255] ^
+                                   perm_z[(k + dk) & 255]]
+        end
+      end
+    end
+
+    trilinear_interp(c, u, v, w)
+  end
+
+  def trilinear_interp(c, u, v, w)
+    acc = 0.0
+    (0..1).each do |i|
+      (0..1).each do |j|
+        (0..1).each do |k|
+          acc += (i * u + (1 - i) * (1 - u)) *
+                 (j * v + (1 - j) * (1 - v)) *
+                 (k * w + (1 - k) * (1 - w)) * c[i][j][k]
+
+        end
+      end
+    end
+    acc
   end
 end
