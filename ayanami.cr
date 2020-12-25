@@ -6,6 +6,7 @@ require "./camera"
 require "./hittable"
 require "./material"
 require "./ray"
+require "./texture"
 require "./v3-helpers"
 
 alias V3 = CrystalEdge::Vector3
