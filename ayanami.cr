@@ -94,15 +94,28 @@ camera = Camera.new(
   aspect_ratio: width.to_f / height
 )
 
+textures = Hash(String, Texture).new
+
+config["textures"].as_h.each do |name, args|
+  texture_type = args["type"].as_s
+  textures[name.as_s] = case texture_type
+                        when "solid_color"
+                          color = V3.new(args["color"][0].as_f,
+                                         args["color"][1].as_f,
+                                         args["color"][2].as_f)
+                          SolidColor.new(color)
+                        else
+                          raise "Invalid texture type #{texture_type}"
+                        end
+end
+
 materials = Hash(String, Material).new
 
 config["materials"].as_h.each do |name, args|
   material_type = args["type"].as_s
   materials[name.as_s] = case material_type
                          when "lambertian"
-                           albedo = V3.new(args["albedo"][0].as_f,
-                                           args["albedo"][1].as_f,
-                                           args["albedo"][2].as_f)
+                           albedo = textures[args["albedo"].as_s]
                            Lambertian.new(albedo)
                          when "dielectric"
                            refraction_index = args["refraction_index"].as_f

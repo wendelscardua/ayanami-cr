@@ -22,11 +22,16 @@ abstract class Material
 end
 
 class Lambertian < Material
-  getter albedo
+  getter albedo : Texture
+
+  def initialize(albedo : Texture)
+    super()
+    @albedo = albedo
+  end
 
   def initialize(albedo : V3)
     super()
-    @albedo = albedo
+    @albedo = SolidColor.new(albedo)
   end
 
   def scatter(ray, hit_record)
@@ -36,7 +41,7 @@ class Lambertian < Material
     end
     ray.origin = hit_record.p
     ray.direction = scatter_direction
-    {ray, albedo}
+    { ray, albedo.value(hit_record.u, hit_record.v, hit_record.p) }
   end
 end
 

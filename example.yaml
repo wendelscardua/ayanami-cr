@@ -1,16 +1,23 @@
-materials:
-  ground:
-    type: lambertian
-    albedo:
+textures:
+  solid_ground:
+    type: solid_color
+    color:
       - 0.8
       - 0.8
-      - 0.0
-  solid:
-    type: lambertian
-    albedo:
+      - 0.1
+  solid_blue:
+    type: solid_color
+    color:
       - 0.1
       - 0.2
       - 0.5
+materials:
+  ground:
+    type: lambertian
+    albedo: solid_ground
+  solid:
+    type: lambertian
+    albedo: solid_blue
   glass:
     type: dielectric
     refraction_index: 2.4
@@ -59,13 +66,13 @@ world:
     material: fuzzy_metal
 camera:
   look_from:
-    - 13.0
-    - 2.0
-    - 3.0
+    - 0.0
+    - 0.0
+    - 4.0
   look_at:
     - 0.0
     - 0.0
-    - 0.0
+    - -1.0
   view_up:
     - 0.0
     - 1.0
