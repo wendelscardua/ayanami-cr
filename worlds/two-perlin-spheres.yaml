@@ -1,0 +1,43 @@
+textures:
+  perlin:
+    type: noise
+materials:
+  perlin:
+    type: lambertian
+    albedo: perlin
+world:
+  - type: sphere
+    center:
+      - 0.0
+      - -1000.0
+      - 0.0
+    radius: 1000.0
+    material: perlin
+  - type: sphere
+    center:
+      - 0.0
+      - 2.0
+      - 0.0
+    radius: 2.0
+    material: perlin
+camera:
+  look_from:
+    - 13.0
+    - 2.0
+    - 3.0
+  look_at:
+    - 0.0
+    - 0.0
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 20.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
+options:
+  width: 640
+  height: 480
+  samples_per_pixel: 64
+  max_depth: 50
