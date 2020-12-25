@@ -1,4 +1,16 @@
 textures:
+  solid_dark:
+    type: solid_color
+    color:
+      - 0.2
+      - 0.3
+      - 0.1
+  solid_light:
+    type: solid_color
+    color:
+      - 0.9
+      - 0.9
+      - 0.9
   solid_ground:
     type: solid_color
     color:
@@ -11,10 +23,14 @@ textures:
       - 0.1
       - 0.2
       - 0.5
+  checker_board:
+    type: checker
+    odd: solid_dark
+    even: solid_light
 materials:
   ground:
     type: lambertian
-    albedo: solid_ground
+    albedo: checker_board
   solid:
     type: lambertian
     albedo: solid_blue

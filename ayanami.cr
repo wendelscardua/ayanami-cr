@@ -104,6 +104,10 @@ config["textures"].as_h.each do |name, args|
                                          args["color"][1].as_f,
                                          args["color"][2].as_f)
                           SolidColor.new(color)
+                        when "checker"
+                          odd = args["odd"].as_s
+                          even = args["even"].as_s
+                          Checker.new(textures[odd], textures[even])
                         else
                           raise "Invalid texture type #{texture_type}"
                         end
