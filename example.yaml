@@ -14,13 +14,6 @@ materials:
   glass:
     type: dielectric
     refraction_index: 2.4
-  shiny_metal:
-    type: metal
-    albedo:
-      - 0.1
-      - 0.4
-      - 0.8
-    fuzz: 0.005
   fuzzy_metal:
     type: metal
     albedo:
@@ -40,9 +33,9 @@ world:
     center:
       - 0.0
       - 0.0
-      - -1.5
+      - -1.0
     radius: 0.5
-    material: shiny_metal
+    material: solid
   - type: sphere
     center:
       - -1.0
@@ -52,13 +45,32 @@ world:
     material: glass
   - type: sphere
     center:
+      - -1.0
+      - 0.0
+      - -1.0
+    radius: -0.45
+    material: glass
+  - type: sphere
+    center:
       - 1.0
       - 0.0
       - -1.0
     radius: 0.5
     material: fuzzy_metal
 camera:
-  vertical_fov: 90.0
+  look_from:
+    - -2.0
+    - 2.0
+    - 1.0
+  look_at:
+    - 0.0
+    - 0.0
+    - -1.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 20.0
 options:
   width: 1920
   height: 1080

@@ -69,8 +69,24 @@ config = YAML.parse(File.read(ARGV[0]))
 width = config["options"]["width"].as_i
 height = config["options"]["height"].as_i
 
-camera = Camera.new(vertical_fov: config["camera"]["vertical_fov"].as_f,
-                    aspect_ratio: width.to_f / height)
+look_from = V3.new(config["camera"]["look_from"][0].as_f,
+                   config["camera"]["look_from"][1].as_f,
+                   config["camera"]["look_from"][2].as_f)
+look_at = V3.new(config["camera"]["look_at"][0].as_f,
+                 config["camera"]["look_at"][1].as_f,
+                 config["camera"]["look_at"][2].as_f)
+view_up = V3.new(config["camera"]["view_up"][0].as_f,
+                 config["camera"]["view_up"][1].as_f,
+                 config["camera"]["view_up"][2].as_f)
+vertical_fov = config["camera"]["vertical_fov"].as_f
+
+camera = Camera.new(
+  look_from: look_from,
+  look_at: look_at,
+  view_up: view_up,
+  vertical_fov: vertical_fov,
+  aspect_ratio: width.to_f / height
+)
 
 materials = Hash(String, Material).new
 
