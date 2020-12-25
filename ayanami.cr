@@ -182,6 +182,10 @@ config["world"].as_a.each do |object|
                         object["z1"].as_f,
                         object["k"].as_f,
                         materials[object["material"].as_s])
+           when "box"
+             HittableBox.new(V3.from_yaml(object["minimum"]),
+                             V3.from_yaml(object["maximum"]),
+                             materials[object["material"].as_s])
            else
              raise "Invalid object type #{object_type}"
            end

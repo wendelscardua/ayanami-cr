@@ -196,6 +196,35 @@ class YZRect < Hittable
   end
 end
 
+class HittableBox < Hittable
+  getter minimum : V3, maximum : V3, material : Material,
+         sides : HittableList
+
+  def initialize(minimum : V3, maximum : V3, material : Material)
+    @minimum = minimum
+    @maximum = maximum
+    @material = material
+    @sides = HittableList.new
+
+    @sides << XYRect.new(@minimum.x, @maximum.x, @minimum.y, @maximum.y, @maximum.z, @material)
+    @sides << XYRect.new(@minimum.x, @maximum.x, @minimum.y, @maximum.y, @minimum.z, @material)
+
+    @sides << XZRect.new(@minimum.x, @maximum.x, @minimum.z, @maximum.z, @maximum.y, @material)
+    @sides << XZRect.new(@minimum.x, @maximum.x, @minimum.z, @maximum.z, @minimum.y, @material)
+
+    @sides << YZRect.new(@minimum.y, @maximum.y, @minimum.z, @maximum.z, @maximum.x, @material)
+    @sides << YZRect.new(@minimum.y, @maximum.y, @minimum.z, @maximum.z, @minimum.x, @material)
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    sides.hit(ray, t_min, t_max)
+  end
+
+  def bounding_box
+    AABB.new(minimum, maximum)
+  end
+end
+
 class HittableList < Hittable
   getter objects
   
