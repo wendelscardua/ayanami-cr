@@ -41,13 +41,14 @@ end
 class Noise < Texture
   WHITE = V3.new(1.0, 1.0, 1.0)
 
-  getter perlin
+  getter perlin, scale
 
-  def initialize
+  def initialize(scale : Float64)
+    @scale = scale
     @perlin = Perlin.new
   end
 
   def value(u : Float64, v : Float64, p : V3)
-    WHITE * perlin.noise(p)
+    WHITE * perlin.noise(p * scale)
   end
 end

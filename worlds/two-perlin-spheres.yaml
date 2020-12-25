@@ -1,6 +1,7 @@
 textures:
   perlin:
     type: noise
+    scale: 4.0
 materials:
   perlin:
     type: lambertian

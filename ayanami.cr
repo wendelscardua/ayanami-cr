@@ -110,7 +110,8 @@ config["textures"].as_h.each do |name, args|
                           even = args["even"].as_s
                           Checker.new(textures[odd], textures[even])
                         when "noise"
-                          Noise.new
+                          scale = args["scale"].as_f
+                          Noise.new(scale)
                         else
                           raise "Invalid texture type #{texture_type}"
                         end
