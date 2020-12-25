@@ -16,6 +16,11 @@ class Perlin
     v = p.y - p.y.floor
     w = p.z - p.z.floor
 
+    # Hermitian smoothing
+    u = u * u * (3 - 2 * u)
+    v = v * v * (3 - 2 * v)
+    w = w * w * (3 - 2 * w)
+
     i = p.x.floor.to_i
     j = p.y.floor.to_i
     k = p.z.floor.to_i
