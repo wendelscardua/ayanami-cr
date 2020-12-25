@@ -79,12 +79,16 @@ view_up = V3.new(config["camera"]["view_up"][0].as_f,
                  config["camera"]["view_up"][1].as_f,
                  config["camera"]["view_up"][2].as_f)
 vertical_fov = config["camera"]["vertical_fov"].as_f
+aperture = config["camera"]["aperture"].as_f
+focus_distance_factor = config["camera"]["focus_distance_factor"].as_f
 
 camera = Camera.new(
   look_from: look_from,
   look_at: look_at,
   view_up: view_up,
   vertical_fov: vertical_fov,
+  aperture: aperture,
+  focus_distance: (look_from - look_at).magnitude * focus_distance_factor,
   aspect_ratio: width.to_f / height
 )
 

@@ -59,18 +59,20 @@ world:
     material: fuzzy_metal
 camera:
   look_from:
-    - -2.0
+    - 13.0
     - 2.0
-    - 1.0
+    - 3.0
   look_at:
     - 0.0
     - 0.0
-    - -1.0
+    - 0.0
   view_up:
     - 0.0
     - 1.0
     - 0.0
   vertical_fov: 20.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
 options:
   width: 1920
   height: 1080

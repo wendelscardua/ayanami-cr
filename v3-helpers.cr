@@ -23,6 +23,13 @@ struct CrystalEdge::Vector3
     end
   end
 
+  def self.random_in_unit_disk
+    loop do
+      p = V3.new(rand(-1.0...1.0), rand(-1.0...1.0), 0.0)
+      return p if p.norm_squared <= 1.0
+    end
+  end
+
   def self.random_unit_vector
     self.random_in_unit_sphere.normalize!
   end
