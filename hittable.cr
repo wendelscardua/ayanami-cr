@@ -119,6 +119,83 @@ class XYRect < Hittable
   end
 end
 
+class XZRect < Hittable
+  getter x0 : Float64, x1 : Float64, z0 : Float64, z1 : Float64, k : Float64,
+         material : Material
+
+  def initialize(x0, x1, z0, z1, k, material)
+    @x0 = x0
+    @x1 = x1
+    @z0 = z0
+    @z1 = z1
+    @k = k
+    @material = material
+  end
+
+  OUTWARD_NORMAL = V3.new(0.0, 1.0, 0.0)
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    t = (k - ray.origin.y) / ray.direction.y
+    return nil if (t < t_min || t > t_max)
+
+    x = ray.origin.x + t * ray.direction.x
+    z = ray.origin.z + t * ray.direction.z
+
+    return nil if (x < x0 || x > x1 || z < z0 || z > z1)
+
+    HitRecord.new t: t,
+                  p: ray.at(t),
+                  material: material,
+                  normal: OUTWARD_NORMAL,
+                  ray: ray,
+                  u: (x - x0) / (x1 - x0),
+                  v: (z - z0) / (z1 - z0)
+  end
+
+  def bounding_box
+    AABB.new(V3.new(x0, k - 0.0001, z0), V3.new(x1, k + 0.0001, z1))
+  end
+end
+
+
+class YZRect < Hittable
+  getter y0 : Float64, y1 : Float64, z0 : Float64, z1 : Float64, k : Float64,
+         material : Material
+
+  def initialize(y0, y1, z0, z1, k, material)
+    @y0 = y0
+    @y1 = y1
+    @z0 = z0
+    @z1 = z1
+    @k = k
+    @material = material
+  end
+
+  OUTWARD_NORMAL = V3.new(1.0, 0.0, 0.0)
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    t = (k - ray.origin.x) / ray.direction.x
+    return nil if (t < t_min || t > t_max)
+
+    y = ray.origin.y + t * ray.direction.y
+    z = ray.origin.z + t * ray.direction.z
+
+    return nil if (y < y0 || y > y1 || z < z0 || z > z1)
+
+    HitRecord.new t: t,
+                  p: ray.at(t),
+                  material: material,
+                  normal: OUTWARD_NORMAL,
+                  ray: ray,
+                  u: (y - y0) / (y1 - y0),
+                  v: (z - z0) / (z1 - z0)
+  end
+
+  def bounding_box
+    AABB.new(V3.new(k - 0.0001, y0, z0), V3.new(k + 0.0001, y1, z1))
+  end
+end
+
 class HittableList < Hittable
   getter objects
   

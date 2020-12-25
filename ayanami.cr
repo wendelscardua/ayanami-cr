@@ -168,6 +168,20 @@ config["world"].as_a.each do |object|
                         object["y1"].as_f,
                         object["k"].as_f,
                         materials[object["material"].as_s])
+           when "xzrect"
+             XZRect.new(object["x0"].as_f,
+                        object["x1"].as_f,
+                        object["z0"].as_f,
+                        object["z1"].as_f,
+                        object["k"].as_f,
+                        materials[object["material"].as_s])
+           when "yzrect"
+             YZRect.new(object["y0"].as_f,
+                        object["y1"].as_f,
+                        object["z0"].as_f,
+                        object["z1"].as_f,
+                        object["k"].as_f,
+                        materials[object["material"].as_s])
            else
              raise "Invalid object type #{object_type}"
            end
