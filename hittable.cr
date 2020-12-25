@@ -12,6 +12,11 @@ class HitRecord
     @u = u
     @v = v
   end
+
+  def set_face_normal(ray : Ray, normal : V3)
+    @front_face = ray.direction.dot(normal) < 0
+    @normal = @front_face ? normal : -normal
+  end
 end
 
 abstract class Hittable
@@ -321,7 +326,7 @@ class Translate < Hittable
   end
 
   def hit(ray, t_min, t_max) : HitRecord?
-    moved_ray = Ray.new(ray.origin - offset, ray.direction - offset)
+    moved_ray = Ray.new(ray.origin - offset, ray.direction)
     hit_record = instance.hit(moved_ray, t_min, t_max)
     return if hit_record.nil?
     hit_record.p += offset
