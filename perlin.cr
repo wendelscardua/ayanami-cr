@@ -11,6 +11,20 @@ class Perlin
     @perm_z = (0..255).to_a.shuffle
   end
 
+  def turbulence(p : V3, depth = 7)
+    accum = 0.0
+    temp_p = p
+    weight = 1.0
+
+    depth.times do
+      accum += weight * noise(temp_p)
+      weight *= 0.5
+      temp_p *= 2.0
+    end
+
+    accum.abs
+  end
+
   def noise(p : V3) : Float64
     u = p.x - p.x.floor
     v = p.y - p.y.floor
