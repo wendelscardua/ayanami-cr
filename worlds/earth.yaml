@@ -35,3 +35,7 @@ options:
   height: 480
   samples_per_pixel: 64
   max_depth: 50
+  background:
+    - 0.7
+    - 0.8
+    - 1.0

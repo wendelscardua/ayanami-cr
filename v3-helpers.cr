@@ -33,4 +33,8 @@ struct CrystalEdge::Vector3
   def self.random_unit_vector
     self.random_in_unit_sphere.normalize!
   end
+
+  def self.from_yaml(yaml : YAML::Any)
+    V3.new(yaml[0].as_f, yaml[1].as_f, yaml[2].as_f)
+  end
 end
