@@ -69,14 +69,17 @@ class Dielectric < Material
     @refraction_index = refraction_index
   end
 
+  WHITE = V3.new(1.0, 1.0, 1.0)
+
   def scatter(ray, hit_record)
     refraction_ratio = hit_record.front_face ? (1.0 / refraction_index) : refraction_index
 
     unit_direction = ray.direction.normalize
-    cos_theta = [(-unit_direction).dot(hit_record.normal), 1.0].min
+    cos_theta = (-unit_direction).dot(hit_record.normal)
+    cos_theta = 1.0 if cos_theta > 1.0
     sin_theta = Math.sqrt(1.0 - cos_theta * cos_theta)
 
-    if refraction_ratio * sin_theta > 1.0 ||
+    if (refraction_ratio * sin_theta > 1.0) ||
        reflectance(cos_theta, refraction_ratio) > rand
       # cannot refract
       ray.direction = reflect(unit_direction, hit_record.normal)
@@ -84,6 +87,6 @@ class Dielectric < Material
       ray.direction = refract(unit_direction, hit_record.normal, refraction_ratio, cos_theta)
     end
     ray.origin = hit_record.p
-    {ray, V3.new(1.0, 1.0, 1.0)}
+    {ray, WHITE}
   end
 end
