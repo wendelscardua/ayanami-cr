@@ -49,6 +49,6 @@ class Noise < Texture
   end
 
   def value(u : Float64, v : Float64, p : V3)
-    WHITE * perlin.turbulence(p * scale)
+    WHITE * 0.5 * (1.0 + Math.sin(scale * p.z + 10 * perlin.turbulence(p)))
   end
 end
