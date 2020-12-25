@@ -74,7 +74,7 @@ camera:
   aperture: 0.1
   focus_distance_factor: 1.0
 options:
-  width: 1920
-  height: 1080
+  width: 640
+  height: 480
   samples_per_pixel: 64
   max_depth: 50

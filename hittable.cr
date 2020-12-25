@@ -31,7 +31,7 @@ class Sphere < Hittable
   def hit(ray, t_min, t_max) : HitRecord?
     oc = ray.origin - center
     a = ray.direction.norm_squared
-    half_b = oc.dot(ray.direction).to_f
+    half_b = oc.dot(ray.direction)
     c = oc.norm_squared - radius * radius
 
     discriminant = half_b * half_b - a * c
@@ -148,7 +148,10 @@ class BVHNode < Hittable
   def hit(ray, t_min, t_max) : HitRecord?
     return nil unless box.hit(ray, t_min, t_max)
 
-    left.hit(ray, t_min, t_max) || right.hit(ray, t_min, t_max)
+    left_hit = left.hit(ray, t_min, t_max)
+    right_hit = right.hit(ray, t_min, left_hit ? left_hit.t : t_max)
+
+    right_hit || left_hit
   end
   
   def bounding_box : AABB?
