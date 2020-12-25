@@ -117,10 +117,18 @@ config["materials"].as_h.each do |name, args|
   materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
 end
 
+primitives = Hash(String, Hittable).new
+
+if config["primitives"]?
+  config["primitives"].as_h.each do |name, args|
+    primitives[name.as_s] = Hittable.from_yaml(yaml: args, materials: materials, primitives: primitives)
+  end
+end
+
 world = HittableList.new
 
 config["world"].as_a.each do |object|
-  world << Hittable.from_yaml(yaml: object, materials: materials)
+  world << Hittable.from_yaml(yaml: object, materials: materials, primitives: primitives)
 end
 
 ayanami = Ayanami.new width: width, height: height,

@@ -21,7 +21,9 @@ abstract class Hittable
   def bounding_box : AABB?
   end
 
-  def self.from_yaml(yaml : YAML::Any, materials : Hash(String, Material))
+  def self.from_yaml(yaml : YAML::Any,
+                     materials : Hash(String, Material),
+                     primitives : Hash(String, Hittable))
     object_type = yaml["type"].as_s
     case object_type
     when "sphere"
