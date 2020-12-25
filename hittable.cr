@@ -1,12 +1,16 @@
 class HitRecord
-  property p : V3, normal : V3, t : Float64, front_face : Bool, material : Material
+  property p : V3, normal : V3, t : Float64, front_face : Bool, material : Material,
+           u : Float64, v : Float64
 
-  def initialize(p : V3, t : Float64, normal : V3, ray : Ray, material : Material)
+  def initialize(p : V3, t : Float64, normal : V3, ray : Ray, material : Material,
+                 u : Float64, v : Float64)
     @p = p
     @t = t
     @front_face = ray.direction.dot(normal) < 0
     @normal = @front_face ? normal : -normal
     @material = material
+    @u = u
+    @v = v
   end
 end
 
@@ -47,12 +51,16 @@ class Sphere < Hittable
     end
 
     p = ray.at(root)
+
+    u, v = get_sphere_uv(p)
     
     HitRecord.new t: root,
                   p: p,
                   material: material,
                   normal: (p - center) * (1.0 / radius),
-                  ray: ray
+                  ray: ray,
+                  u: u,
+                  v: v
   end
 
   def bounding_box
@@ -61,6 +69,13 @@ class Sphere < Hittable
       center - r_vector,
       center + r_vector
     )
+  end
+
+  private def get_sphere_uv(p : V3)
+    theta = Math.acos(-p.y)
+    phi = Math.atan2(-p.z, p.x) + Math::PI
+
+    { phi / (2 * Math::PI), theta / Math::PI }
   end
 end
 
