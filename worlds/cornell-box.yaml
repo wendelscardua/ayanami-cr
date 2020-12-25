@@ -1,0 +1,106 @@
+textures:
+  red:
+    type: solid_color
+    color:
+      - 0.65
+      - 0.05
+      - 0.05
+  white:
+    type: solid_color
+    color:
+      - 0.73
+      - 0.73
+      - 0.73
+  green:
+    type: solid_color
+    color:
+      - 0.12
+      - 0.45
+      - 0.15
+  light:
+    type: solid_color
+    color:
+      - 15.0
+      - 15.0
+      - 15.0
+materials:
+  red:
+    type: lambertian
+    albedo: red
+  white:
+    type: lambertian
+    albedo: white
+  green:
+    type: lambertian
+    albedo: green
+  light:
+    type: diffuse_light
+    texture: light
+world:
+  - type: yzrect
+    y0: 0.0
+    y1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 555.0
+    material: green
+  - type: yzrect
+    y0: 0.0
+    y1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 0.0
+    material: red
+  - type: xzrect
+    x0: 213.0
+    x1: 343.0
+    z0: 227.0
+    z1: 332.0
+    k: 554.0
+    material: light
+  - type: xzrect
+    x0: 0.0
+    x1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 0.0
+    material: white
+  - type: xzrect
+    x0: 0.0
+    x1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 555.0
+    material: white
+  - type: xyrect
+    x0: 0.0
+    x1: 555.0
+    y0: 0.0
+    y1: 555.0
+    k: 555.0
+    material: white
+camera:
+  look_from:
+    - 278.0
+    - 278.0
+    - -800.0
+  look_at:
+    - 278.0
+    - 278.0
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
+options:
+  width: 400
+  height: 400
+  samples_per_pixel: 200
+  max_depth: 50
+  background:
+    - 0.0
+    - 0.0
+    - 0.0
