@@ -138,7 +138,7 @@ end
 ayanami = Ayanami.new width: width, height: height,
                       samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
                       max_depth: config["options"]["max_depth"].as_i,
-                      world: world,
+                      world: BVHNode.new(world),
                       camera: camera
 
 ayanami.run(output: ARGV[1])

@@ -89,7 +89,7 @@ class HittableList < Hittable
     hit_record
   end
 
-  def bounding_box
+  def bounding_box : AABB?
     return nil if objects.empty?
 
     box = nil
@@ -108,4 +108,64 @@ class HittableList < Hittable
   end
 end
 
+class BVHNode < Hittable
+  getter left : Hittable, right : Hittable, box : AABB
 
+  def initialize(hittable_list : HittableList)
+    initialize(hittable_list.objects)
+  end
+
+  def initialize(objects : Array(Hittable))
+    axis = rand(0..2)
+
+    if (objects.size  == 1)
+      @left = @right = objects[0]
+    elsif (objects.size == 2)
+      if (comparator(objects[0], objects[1], axis) <= 0)
+        @left = objects[0]
+        @right = objects[1]
+      else
+        @left = objects[1]
+        @right = objects[0]
+      end
+    else
+      sorted = objects.sort { |a, b| comparator(a, b, axis) }
+      mid = (objects.size / 2).to_i
+      @left = BVHNode.new(sorted[0...mid])
+      @right = BVHNode.new(sorted[mid...sorted.size])
+    end
+
+    box_left = @left.bounding_box
+    box_right = @right.bounding_box
+
+    if box_left.nil? || box_right.nil?
+      raise "No bounding box"
+    else
+      @box = AABB.surrounding_box(box_left, box_right)
+    end
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    return nil unless box.hit(ray, t_min, t_max)
+
+    left.hit(ray, t_min, t_max) || right.hit(ray, t_min, t_max)
+  end
+  
+  def bounding_box : AABB?
+    box
+  end
+
+  def comparator(a : Hittable, b : Hittable, axis : Int32) : Int32
+    box_a = a.bounding_box
+    box_b = b.bounding_box
+    if box_a.nil? || box_b.nil?
+      raise "Invalid objects"
+    elsif axis == 0
+      box_a.minimum.x <=> box_b.minimum.x || 0
+    elsif axis == 1
+      box_a.minimum.y <=> box_b.minimum.y || 0
+    else
+      box_a.minimum.z <=> box_b.minimum.z || 0
+    end
+  end
+end
