@@ -37,3 +37,17 @@ class Checker < Texture
     end
   end
 end
+
+class Noise < Texture
+  WHITE = V3.new(1.0, 1.0, 1.0)
+
+  getter perlin
+
+  def initialize
+    @perlin = Perlin.new
+  end
+
+  def value(u : Float64, v : Float64, p : V3)
+    WHITE * perlin.noise(p)
+  end
+end

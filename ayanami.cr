@@ -5,6 +5,7 @@ require "./aabb"
 require "./camera"
 require "./hittable"
 require "./material"
+require "./perlin"
 require "./ray"
 require "./texture"
 require "./v3-helpers"
@@ -108,6 +109,8 @@ config["textures"].as_h.each do |name, args|
                           odd = args["odd"].as_s
                           even = args["even"].as_s
                           Checker.new(textures[odd], textures[even])
+                        when "noise"
+                          Noise.new
                         else
                           raise "Invalid texture type #{texture_type}"
                         end
