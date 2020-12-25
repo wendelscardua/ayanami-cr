@@ -115,7 +115,7 @@ YAML
       # glass
       config['materials'][mat_name] = {
         'type' => 'dielectric',
-        'refraction_index' => 0.5
+        'refraction_index' => 1.5
       }
     end
     
