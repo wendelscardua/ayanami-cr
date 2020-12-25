@@ -1,0 +1,103 @@
+textures:
+  solid_dark:
+    type: solid_color
+    color:
+      - 0.2
+      - 0.3
+      - 0.1
+  solid_light:
+    type: solid_color
+    color:
+      - 0.9
+      - 0.9
+      - 0.9
+  solid_ground:
+    type: solid_color
+    color:
+      - 0.8
+      - 0.8
+      - 0.1
+  solid_blue:
+    type: solid_color
+    color:
+      - 0.1
+      - 0.2
+      - 0.5
+  checker_board:
+    type: checker
+    odd: solid_dark
+    even: solid_light
+materials:
+  ground:
+    type: lambertian
+    albedo: checker_board
+  solid:
+    type: lambertian
+    albedo: solid_blue
+  glass:
+    type: dielectric
+    refraction_index: 2.4
+  fuzzy_metal:
+    type: metal
+    albedo:
+      - 0.8
+      - 0.5
+      - 0.1
+    fuzz: 0.1
+world:
+  - type: sphere
+    center:
+      - 0.0
+      - -100.5
+      - -1.0
+    radius: 100.0
+    material: ground
+  - type: sphere
+    center:
+      - 0.0
+      - 0.0
+      - -1.0
+    radius: 0.5
+    material: solid
+  - type: sphere
+    center:
+      - -1.0
+      - 0.0
+      - -1.0
+    radius: 0.5
+    material: glass
+  - type: sphere
+    center:
+      - -1.0
+      - 0.0
+      - -1.0
+    radius: -0.45
+    material: glass
+  - type: sphere
+    center:
+      - 1.0
+      - 0.0
+      - -1.0
+    radius: 0.5
+    material: fuzzy_metal
+camera:
+  look_from:
+    - 0.0
+    - 0.0
+    - 4.0
+  look_at:
+    - 0.0
+    - 0.0
+    - -1.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 20.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
+options:
+  width: 640
+  height: 480
+  samples_per_pixel: 64
+  max_depth: 50
