@@ -56,6 +56,9 @@ abstract class Hittable
       HittableBox.new(V3.from_yaml(yaml["minimum"]),
                       V3.from_yaml(yaml["maximum"]),
                       materials[yaml["material"].as_s])
+    when "translate"
+      Translate.new(primitives[yaml["instance"].as_s],
+                    V3.from_yaml(yaml["offset"]))
     else
       raise "Invalid object type #{object_type}"
     end
@@ -306,6 +309,30 @@ class HittableList < Hittable
     end
 
     box
+  end
+end
+
+class Translate < Hittable
+  getter instance : Hittable, offset : V3
+
+  def initialize(instance : Hittable, offset : V3)
+    @instance = instance
+    @offset = offset
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    moved_ray = Ray.new(ray.origin - offset, ray.direction - offset)
+    hit_record = instance.hit(moved_ray, t_min, t_max)
+    return if hit_record.nil?
+    hit_record.p += offset
+    hit_record
+  end
+
+  def bounding_box
+    original_box = instance.bounding_box
+    return if original_box.nil?
+
+    AABB.new(original_box.minimum + offset, original_box.maximum + offset)
   end
 end
 
