@@ -3,6 +3,12 @@ abstract class Material
     {nil,nil}
   end
 
+  BLACK = V3.new(0.0, 0.0, 0.0)
+
+  def emitted(u : Float64, v : Float64, p : V3) : V3
+    BLACK
+  end
+
   def reflect(v : V3, n : V3) : V3
     v - n * 2 * v.dot(n)
   end
@@ -93,5 +99,21 @@ class Dielectric < Material
     end
     ray.origin = hit_record.p
     {ray, WHITE}
+  end
+end
+
+class DiffuseLight < Material
+  getter texture
+
+  def initialize(texture : Texture)
+    @texture = texture
+  end
+
+  def scatter(ray, hit_record)
+    { nil, nil }
+  end
+
+  def emitted(u, v, p)
+    texture.value(u, v, p)
   end
 end

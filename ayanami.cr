@@ -137,6 +137,9 @@ config["materials"].as_h.each do |name, args|
                                            args["albedo"][2].as_f)
                            fuzz = args["fuzz"].as_f
                            Metal.new(albedo, fuzz)
+                         when "diffuse_light"
+                           texture = textures[args["texture"].as_s]
+                           DiffuseLight.new(texture)
                          else
                            raise "Invalid material type #{material_type}"
                          end
