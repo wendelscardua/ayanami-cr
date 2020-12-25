@@ -15,6 +15,9 @@ materials:
   light:
     type: diffuse_light
     texture: light
+  glass:
+    type: dielectric
+    refraction_index: 1.4
 world:
   - type: sphere
     center:
@@ -42,8 +45,22 @@ world:
       - 0.0
       - 6.0
       - 0.0
-    radius: 2.0
+    radius: 0.25
     material: light
+  - type: sphere
+    center:
+      - 0.0
+      - 6.0
+      - 0.0
+    radius: 2.0
+    material: glass
+  - type: sphere
+    center:
+      - 0.0
+      - 6.0
+      - 0.0
+    radius: -1.5
+    material: glass
 camera:
   look_from:
     - 26.0

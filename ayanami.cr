@@ -41,13 +41,17 @@ class Ayanami
           ray_color(ray, background, world, max_depth)
         end.sum / samples_per_pixel.to_f
 
-        canvas[i, height - j - 1] = StumpyPNG::RGBA.from_rgb_n((Math.sqrt(color.x) * 255.99999).to_i,
-                                                               (Math.sqrt(color.y) * 255.99999).to_i,
-                                                               (Math.sqrt(color.z) * 255.99999).to_i,
+        canvas[i, height - j - 1] = StumpyPNG::RGBA.from_rgb_n(clamp_color(color.x),
+                                                               clamp_color(color.y),
+                                                               clamp_color(color.z),
                                                                8)
       end
     end
     StumpyPNG.write(canvas, output)
+  end
+
+  def clamp_color(value)
+    (Math.sqrt(value.clamp(0.0, 1.0)) * 255.99999).to_i
   end
 
   BLACK = V3.zero
@@ -157,6 +161,13 @@ config["world"].as_a.each do |object|
              radius = object["radius"].as_f
              material = object["material"].as_s
              Sphere.new(center, radius, materials[material])
+           when "xyrect"
+             XYRect.new(object["x0"].as_f,
+                        object["x1"].as_f,
+                        object["y0"].as_f,
+                        object["y1"].as_f,
+                        object["k"].as_f,
+                        materials[object["material"].as_s])
            else
              raise "Invalid object type #{object_type}"
            end

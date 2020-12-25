@@ -94,7 +94,7 @@ class XYRect < Hittable
     @material = material
   end
 
-  OUTWARD_NORMAL = V3.new(0, 0, 1)
+  OUTWARD_NORMAL = V3.new(0.0, 0.0, 1.0)
 
   def hit(ray, t_min, t_max) : HitRecord?
     t = (k - ray.origin.z) / ray.direction.z
