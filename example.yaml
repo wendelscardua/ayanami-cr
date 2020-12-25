@@ -1,0 +1,66 @@
+materials:
+  ground:
+    type: lambertian
+    albedo:
+      - 0.8
+      - 0.8
+      - 0.0
+  solid:
+    type: lambertian
+    albedo:
+      - 0.1
+      - 0.2
+      - 0.5
+  glass:
+    type: dielectric
+    refraction_index: 2.4
+  shiny_metal:
+    type: metal
+    albedo:
+      - 0.1
+      - 0.4
+      - 0.8
+    fuzz: 0.005
+  fuzzy_metal:
+    type: metal
+    albedo:
+      - 0.8
+      - 0.5
+      - 0.1
+    fuzz: 0.1
+world:
+  - type: sphere
+    center:
+      - 0.0
+      - -100.5
+      - -1.0
+    radius: 100.0
+    material: ground
+  - type: sphere
+    center:
+      - 0.0
+      - 0.0
+      - -1.5
+    radius: 0.5
+    material: shiny_metal
+  - type: sphere
+    center:
+      - -1.0
+      - 0.0
+      - -1.0
+    radius: 0.5
+    material: glass
+  - type: sphere
+    center:
+      - 1.0
+      - 0.0
+      - -1.0
+    radius: 0.5
+    material: fuzzy_metal
+camera:
+  vertical_fov: 90.0
+options:
+  width: 1920
+  height: 1080
+  samples_per_pixel: 64
+  max_depth: 50
