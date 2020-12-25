@@ -52,3 +52,35 @@ class Noise < Texture
     WHITE * 0.5 * (1.0 + Math.sin(scale * p.z + 10 * perlin.turbulence(p)))
   end
 end
+
+class ImageTexture < Texture
+  getter canvas : StumpyCore::Canvas,
+         width : Int32, height : Int32
+
+  def initialize(filename : String)
+    @canvas = StumpyPNG.read(filename)
+    @width = @canvas.width
+    @height = @canvas.height
+  end
+
+  COLOR_SCALE = 1.0 / 255.0
+
+  def value(u : Float64, v : Float64, p : V3)
+    # Clamp input texture coordinates to [0,1] x [1,0]
+    u = u.clamp(0.0, 1.0)
+    v = 1.0 - v.clamp(0.0, 1.0);  # Flip V to image coordinates
+
+    i = (u * width).to_i
+    j = (v * height).to_i
+
+    # Clamp integer mapping, since actual coordinates should be less than 1.0
+    i = width - 1 if i >= width
+    i = 0 if i < 0
+    j = height - 1 if j >= height
+    j = 0 if j < 0
+
+    r, g, b = canvas[i, j].to_rgb8
+
+    V3.new(COLOR_SCALE * r, COLOR_SCALE * g, COLOR_SCALE * b)
+  end
+end

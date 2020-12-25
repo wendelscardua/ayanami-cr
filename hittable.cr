@@ -52,12 +52,14 @@ class Sphere < Hittable
 
     p = ray.at(root)
 
-    u, v = get_sphere_uv(p)
+    outward_normal = (p - center) * (1.0 / radius)
+
+    u, v = get_sphere_uv(outward_normal)
     
     HitRecord.new t: root,
                   p: p,
                   material: material,
-                  normal: (p - center) * (1.0 / radius),
+                  normal: outward_normal,
                   ray: ray,
                   u: u,
                   v: v

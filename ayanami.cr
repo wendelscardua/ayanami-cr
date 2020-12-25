@@ -112,6 +112,9 @@ config["textures"].as_h.each do |name, args|
                         when "noise"
                           scale = args["scale"].as_f
                           Noise.new(scale)
+                        when "image"
+                          filename = args["filename"].as_s
+                          ImageTexture.new(filename)
                         else
                           raise "Invalid texture type #{texture_type}"
                         end
