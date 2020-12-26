@@ -7,11 +7,17 @@ materials:
     type: lambertian
     albedo: earth
 world:
-  - type: sphere
-    center:
+  - type: moving_sphere
+    start_center:
+      - -0.5
+      - 0.5
       - 0.0
+    end_center:
+      - 0.5
+      - -0.5
       - 0.0
-      - 0.0
+    start_time: 0.0
+    end_time: 1.0
     radius: 2.0
     material: earth
 camera:

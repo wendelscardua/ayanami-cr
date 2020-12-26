@@ -36,6 +36,16 @@ abstract class Hittable
       radius = yaml["radius"].as_f
       material = yaml["material"].as_s
       Sphere.new(center, radius, materials[material])
+    when "moving_sphere"
+      start_center = V3.from_yaml(yaml["start_center"])
+      end_center = V3.from_yaml(yaml["end_center"])
+      start_time = yaml["start_time"].as_f
+      end_time = yaml["end_time"].as_f
+      radius = yaml["radius"].as_f
+      material = yaml["material"].as_s
+      MovingSphere.new(start_center, end_center,
+                       start_time, end_time,
+                       radius, materials[material])
     when "xyrect"
       XYRect.new(yaml["x0"].as_f,
                  yaml["x1"].as_f,
