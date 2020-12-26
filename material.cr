@@ -42,6 +42,9 @@ abstract class Material
     when "diffuse_light"
       texture = textures[yaml["texture"].as_s]
       DiffuseLight.new(texture)
+    when "isotropic"
+      albedo = textures[yaml["albedo"].as_s]
+      Isotropic.new(albedo)
     else
       raise "Invalid material type #{material_type}"
     end
@@ -137,4 +140,21 @@ class DiffuseLight < Material
   def emitted(u, v, p)
     texture.value(u, v, p)
   end
+end
+
+class Isotropic < Material
+  getter albedo : Texture
+
+  def initialize(albedo : Texture)
+    @albedo = albedo
+  end
+
+  def scatter(ray, hit_record)
+    ray.origin = hit_record.p
+    ray.direction = V3.random_in_unit_sphere
+    {
+      ray,
+      albedo.value(hit_record.u, hit_record.v, hit_record.p)
+    }
+  end  
 end

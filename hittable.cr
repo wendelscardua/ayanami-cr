@@ -81,6 +81,17 @@ abstract class Hittable
                   end
       RotateY.new(primitive,
                   yaml["theta"].as_f)
+    when "constant_medium"
+      primitive = if yaml["instance"]?
+                    primitives[yaml["instance"].as_s]
+                  elsif yaml["inline"]?
+                    Hittable.from_yaml(yaml["inline"], materials, primitives)
+                  else
+                    raise "translate requires instance or inline"
+                  end
+      ConstantMedium.new(primitive,
+                         yaml["density"].as_f,
+                         materials[yaml["material"].as_s])
     else
       raise "Invalid object type #{object_type}"
     end
@@ -487,5 +498,52 @@ class BVHNode < Hittable
     else
       box_a.minimum.z <=> box_b.minimum.z || 0
     end
+  end
+end
+
+class ConstantMedium < Hittable
+  getter boundary : Hittable,
+         negative_inverse_density : Float64,
+         phase_function : Material
+
+  def initialize(boundary,
+                 density,
+                 phase_function)
+    @boundary = boundary
+    @negative_inverse_density = -1.0 / density
+    @phase_function = phase_function
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    rec1 = boundary.hit(ray, -Float64::INFINITY, Float64::INFINITY)
+    return if rec1.nil?
+
+    rec2 = boundary.hit(ray, rec1.t + 0.0001, Float64::INFINITY)
+    return if rec2.nil?
+
+    rec1.t = t_min if rec1.t < t_min
+    rec2.t = t_max if rec2.t > t_max
+
+    return if rec1.t >= rec2.t
+
+    rec1.t = 0 if rec1.t < 0
+
+    ray_length = ray.direction.magnitude
+    distance_inside_boundary = (rec2.t - rec1.t) * ray_length
+    hit_distance = negative_inverse_density * Math.log(rand);
+
+    return if hit_distance > distance_inside_boundary
+
+    rec1.t = rec1.t + hit_distance / ray_length
+    rec1.p = ray.at(rec1.t)
+
+    rec1.normal = V3.new(1.0, 0.0, 0.0) # arbitrary
+    rec1.front_face = true # arbitrary
+    rec1.material = phase_function
+    return rec1
+  end
+
+  def bounding_box
+    boundary.bounding_box
   end
 end
