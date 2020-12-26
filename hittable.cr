@@ -64,6 +64,9 @@ abstract class Hittable
     when "translate"
       Translate.new(primitives[yaml["instance"].as_s],
                     V3.from_yaml(yaml["offset"]))
+    when "rotate_y"
+      RotateY.new(primitives[yaml["instance"].as_s],
+                  yaml["theta"].as_f)
     else
       raise "Invalid object type #{object_type}"
     end
@@ -341,6 +344,73 @@ class Translate < Hittable
   end
 end
 
+class RotateY < Hittable
+  getter instance : Hittable, cos_theta : Float64, sin_theta : Float64,
+         box : AABB?
+
+  def initialize(instance : Hittable, theta : Float64)
+    theta = theta * Math::PI / 180.0
+    @instance = instance
+    @cos_theta = Math.cos(theta)
+    @sin_theta = Math.sin(theta)
+    if bbox = @instance.bounding_box
+      min_x = min_y = min_z = Float64::INFINITY
+      max_x = max_y = max_z = -Float64::INFINITY
+      (0..1).each do |i|
+        (0..1).each do |j|
+          (0..1).each do |k|
+            x = i * bbox.maximum.x + (1 - i) * bbox.minimum.x
+            y = j * bbox.maximum.y + (1 - j) * bbox.minimum.y
+            z = k * bbox.maximum.z + (1 - k) * bbox.minimum.z
+
+            newx =  cos_theta * x + sin_theta * z;
+            newz = -sin_theta * x + cos_theta * z;
+
+            min_x = Math.min(min_x, newx)
+            min_y = Math.min(min_y, y)
+            min_z = Math.min(min_z, newz)
+
+            max_x = Math.max(max_x, newx)
+            max_y = Math.max(max_y, y)
+            max_z = Math.max(max_z, newz)
+          end
+        end
+      end
+      @box = AABB.new(V3.new(min_x, min_y, min_z),
+                      V3.new(max_x, max_y, max_z))
+    else
+      @box = nil
+    end
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    rotated_ray = Ray.new(V3.new(cos_theta * ray.origin.x - sin_theta * ray.origin.z,
+                                 ray.origin.y,
+                                 sin_theta * ray.origin.x + cos_theta * ray.origin.z),
+                          V3.new(cos_theta * ray.direction.x - sin_theta * ray.direction.z,
+                                 ray.direction.y,
+                                 sin_theta * ray.direction.x + cos_theta * ray.direction.z))
+
+    hit_record = instance.hit(rotated_ray, t_min, t_max)
+    return if hit_record.nil?
+
+    hit_record.p = V3.new(cos_theta * hit_record.p.x + sin_theta * hit_record.p.z,
+                          hit_record.p.y,
+                          -sin_theta * hit_record.p.x + cos_theta * hit_record.p.z)
+
+
+    hit_record.set_face_normal(rotated_ray,
+                               V3.new(cos_theta * hit_record.normal.x + sin_theta * hit_record.normal.z,
+                                      hit_record.normal.y,
+                                      -sin_theta * hit_record.normal.x + cos_theta * hit_record.normal.z))
+    hit_record
+  end
+
+  def bounding_box
+    box
+  end  
+end
+
 class BVHNode < Hittable
   getter left : Hittable, right : Hittable, box : AABB
 
@@ -369,20 +439,20 @@ class BVHNode < Hittable
     end
 
     box_left = @left.bounding_box
-    box_right = @right.bounding_box
+      box_right = @right.bounding_box
 
-    if box_left.nil? || box_right.nil?
-      raise "No bounding box"
-    else
-      @box = AABB.surrounding_box(box_left, box_right)
+      if box_left.nil? || box_right.nil?
+        raise "No bounding box"
+      else
+        @box = AABB.surrounding_box(box_left, box_right)
+      end
     end
-  end
 
-  def hit(ray, t_min, t_max) : HitRecord?
-    return nil unless box.hit(ray, t_min, t_max)
+    def hit(ray, t_min, t_max) : HitRecord?
+      return nil unless box.hit(ray, t_min, t_max)
 
-    left_hit = left.hit(ray, t_min, t_max)
-    right_hit = right.hit(ray, t_min, left_hit ? left_hit.t : t_max)
+      left_hit = left.hit(ray, t_min, t_max)
+      right_hit = right.hit(ray, t_min, left_hit ? left_hit.t : t_max)
 
     right_hit || left_hit
   end
