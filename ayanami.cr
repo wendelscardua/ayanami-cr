@@ -138,7 +138,7 @@ end
 ayanami = Ayanami.new width: width, height: height,
                       samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
                       max_depth: config["options"]["max_depth"].as_i,
-                      world: BVHNode.new(world),
+                      world: BVHNode.new(world, start_time, end_time),
                       camera: camera,
                       background: V3.from_yaml(config["options"]["background"])
 

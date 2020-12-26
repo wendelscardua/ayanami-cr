@@ -23,7 +23,7 @@ abstract class Hittable
   def hit(ray : Ray, t_min : Float, t_max : Float) : HitRecord?
   end
 
-  def bounding_box : AABB?
+  def bounding_box(start_time : Float64, end_time : Float64) : AABB?
   end
 
   def self.from_yaml(yaml : YAML::Any,
@@ -151,7 +151,7 @@ class Sphere < Hittable
                   v: v
   end
 
-  def bounding_box
+  def bounding_box(start_time, end_time)
     r_vector = V3.new(radius, radius, radius)
     AABB.new(
       center - r_vector,
@@ -223,20 +223,20 @@ class MovingSphere < Hittable
                   v: v
   end
 
-    def bounding_box
-      r_vector = V3.new(radius, radius, radius)
-      AABB.surrounding_box(AABB.new(center(start_time) - r_vector,
-                                    center(start_time) + r_vector),
-                           AABB.new(center(end_time) - r_vector,
-                                    center(end_time) + r_vector))
-    end
+  def bounding_box(start_time, end_time)
+    r_vector = V3.new(radius, radius, radius)
+    AABB.surrounding_box(AABB.new(center(start_time) - r_vector,
+                                  center(start_time) + r_vector),
+                         AABB.new(center(end_time) - r_vector,
+                                  center(end_time) + r_vector))
+  end
 
-    private def get_sphere_uv(p : V3)
-      theta = Math.acos(-p.y)
-      phi = Math.atan2(-p.z, p.x) + Math::PI
+  private def get_sphere_uv(p : V3)
+    theta = Math.acos(-p.y)
+    phi = Math.atan2(-p.z, p.x) + Math::PI
 
-      { phi / (2 * Math::PI), theta / Math::PI }
-    end
+    { phi / (2 * Math::PI), theta / Math::PI }
+  end
 end
 
 class XYRect < Hittable
@@ -408,12 +408,12 @@ class HittableList < Hittable
     hit_record
   end
 
-  def bounding_box : AABB?
+  def bounding_box(start_time, end_time) : AABB?
     return nil if objects.empty?
 
     box = nil
     objects.each do |object|
-      object_box = object.bounding_box
+      object_box = object.bounding_box(start_time, end_time)
       return nil if object_box.nil?
 
       if box.nil?
@@ -443,8 +443,8 @@ class Translate < Hittable
     hit_record
   end
 
-  def bounding_box
-    original_box = instance.bounding_box
+  def bounding_box(start_time, end_time)
+    original_box = instance.bounding_box(start_time, end_time)
     return if original_box.nil?
 
     AABB.new(original_box.minimum + offset, original_box.maximum + offset)
@@ -460,7 +460,36 @@ class RotateY < Hittable
     @instance = instance
     @cos_theta = Math.cos(theta)
     @sin_theta = Math.sin(theta)
-    if bbox = @instance.bounding_box
+    @box = nil
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    rotated_ray = Ray.new(V3.new(cos_theta * ray.origin.x - sin_theta * ray.origin.z,
+                                 ray.origin.y,
+                                 sin_theta * ray.origin.x + cos_theta * ray.origin.z),
+                          V3.new(cos_theta * ray.direction.x - sin_theta * ray.direction.z,
+                                 ray.direction.y,
+                                 sin_theta * ray.direction.x + cos_theta * ray.direction.z),
+                          ray.time)
+
+    hit_record = instance.hit(rotated_ray, t_min, t_max)
+    return if hit_record.nil?
+
+    hit_record.p = V3.new(cos_theta * hit_record.p.x + sin_theta * hit_record.p.z,
+                          hit_record.p.y,
+                          -sin_theta * hit_record.p.x + cos_theta * hit_record.p.z)
+
+
+    hit_record.set_face_normal(rotated_ray,
+                               V3.new(cos_theta * hit_record.normal.x + sin_theta * hit_record.normal.z,
+                                      hit_record.normal.y,
+                                      -sin_theta * hit_record.normal.x + cos_theta * hit_record.normal.z))
+    hit_record
+  end
+
+  def bounding_box(start_time, end_time)
+    return @box if @box
+    if bbox = @instance.bounding_box(start_time, end_time)
       min_x = min_y = min_z = Float64::INFINITY
       max_x = max_y = max_z = -Float64::INFINITY
       (0..1).each do |i|
@@ -488,51 +517,25 @@ class RotateY < Hittable
     else
       @box = nil
     end
-  end
-
-  def hit(ray, t_min, t_max) : HitRecord?
-    rotated_ray = Ray.new(V3.new(cos_theta * ray.origin.x - sin_theta * ray.origin.z,
-                                 ray.origin.y,
-                                 sin_theta * ray.origin.x + cos_theta * ray.origin.z),
-                          V3.new(cos_theta * ray.direction.x - sin_theta * ray.direction.z,
-                                 ray.direction.y,
-                                 sin_theta * ray.direction.x + cos_theta * ray.direction.z),
-                          ray.time)
-
-    hit_record = instance.hit(rotated_ray, t_min, t_max)
-    return if hit_record.nil?
-
-    hit_record.p = V3.new(cos_theta * hit_record.p.x + sin_theta * hit_record.p.z,
-                          hit_record.p.y,
-                          -sin_theta * hit_record.p.x + cos_theta * hit_record.p.z)
-
-
-    hit_record.set_face_normal(rotated_ray,
-                               V3.new(cos_theta * hit_record.normal.x + sin_theta * hit_record.normal.z,
-                                      hit_record.normal.y,
-                                      -sin_theta * hit_record.normal.x + cos_theta * hit_record.normal.z))
-    hit_record
-  end
-
-  def bounding_box
-    box
+    
+    @box
   end  
 end
 
 class BVHNode < Hittable
   getter left : Hittable, right : Hittable, box : AABB
 
-  def initialize(hittable_list : HittableList)
-    initialize(hittable_list.objects)
+  def initialize(hittable_list : HittableList, start_time : Float64, end_time : Float64)
+    initialize(hittable_list.objects, start_time, end_time)
   end
 
-  def initialize(objects : Array(Hittable))
+  def initialize(objects : Array(Hittable), start_time : Float64, end_time : Float64)
     axis = rand(0..2)
 
     if (objects.size  == 1)
       @left = @right = objects[0]
     elsif (objects.size == 2)
-      if (comparator(objects[0], objects[1], axis) <= 0)
+      if (comparator(objects[0], objects[1], axis, start_time, end_time) <= 0)
         @left = objects[0]
         @right = objects[1]
       else
@@ -540,38 +543,38 @@ class BVHNode < Hittable
         @right = objects[0]
       end
     else
-      sorted = objects.sort { |a, b| comparator(a, b, axis) }
+      sorted = objects.sort { |a, b| comparator(a, b, axis, start_time, end_time) }
       mid = (objects.size / 2).to_i
-      @left = BVHNode.new(sorted[0...mid])
-      @right = BVHNode.new(sorted[mid...sorted.size])
+      @left = BVHNode.new(sorted[0...mid], start_time, end_time)
+      @right = BVHNode.new(sorted[mid...sorted.size], start_time, end_time)
     end
 
-    box_left = @left.bounding_box
-      box_right = @right.bounding_box
+    box_left = @left.bounding_box(start_time, end_time)
+    box_right = @right.bounding_box(start_time, end_time)
 
-      if box_left.nil? || box_right.nil?
-        raise "No bounding box"
-      else
-        @box = AABB.surrounding_box(box_left, box_right)
-      end
+    if box_left.nil? || box_right.nil?
+      raise "No bounding box"
+    else
+      @box = AABB.surrounding_box(box_left, box_right)
     end
+  end
 
-    def hit(ray, t_min, t_max) : HitRecord?
-      return nil unless box.hit(ray, t_min, t_max)
+  def hit(ray, t_min, t_max) : HitRecord?
+    return nil unless box.hit(ray, t_min, t_max)
 
-      left_hit = left.hit(ray, t_min, t_max)
-      right_hit = right.hit(ray, t_min, left_hit ? left_hit.t : t_max)
+    left_hit = left.hit(ray, t_min, t_max)
+    right_hit = right.hit(ray, t_min, left_hit ? left_hit.t : t_max)
 
     right_hit || left_hit
   end
   
-  def bounding_box : AABB?
+  def bounding_box(start_time, end_time): AABB?
     box
   end
 
-  def comparator(a : Hittable, b : Hittable, axis : Int32) : Int32
-    box_a = a.bounding_box
-    box_b = b.bounding_box
+  def comparator(a : Hittable, b : Hittable, axis : Int32, start_time, end_time) : Int32
+    box_a = a.bounding_box(start_time, end_time)
+    box_b = b.bounding_box(start_time, end_time)
     if box_a.nil? || box_b.nil?
       raise "Invalid objects"
     elsif axis == 0
