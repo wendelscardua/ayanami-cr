@@ -94,6 +94,8 @@ view_up = V3.new(config["camera"]["view_up"][0].as_f,
 vertical_fov = config["camera"]["vertical_fov"].as_f
 aperture = config["camera"]["aperture"].as_f
 focus_distance_factor = config["camera"]["focus_distance_factor"].as_f
+start_time = config["camera"]["start_time"].as_f
+end_time = config["camera"]["end_time"].as_f
 
 camera = Camera.new(
   look_from: look_from,
@@ -102,7 +104,9 @@ camera = Camera.new(
   vertical_fov: vertical_fov,
   aperture: aperture,
   focus_distance: (look_from - look_at).magnitude * focus_distance_factor,
-  aspect_ratio: width.to_f / height
+  aspect_ratio: width.to_f / height,
+  start_time: start_time,
+  end_time: end_time
 )
 
 textures = Hash(String, Texture).new

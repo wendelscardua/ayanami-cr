@@ -101,6 +101,8 @@ options:
   height: 480
   samples_per_pixel: 64
   max_depth: 50
+  start_time: 0.0
+  end_time: 1.0
   background:
     - 0.7
     - 0.8
