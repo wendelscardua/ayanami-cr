@@ -62,10 +62,24 @@ abstract class Hittable
                       V3.from_yaml(yaml["maximum"]),
                       materials[yaml["material"].as_s])
     when "translate"
-      Translate.new(primitives[yaml["instance"].as_s],
+      primitive = if yaml["instance"]?
+                    primitives[yaml["instance"].as_s]
+                  elsif yaml["inline"]?
+                    Hittable.from_yaml(yaml["inline"], materials, primitives)
+                  else
+                    raise "translate requires instance or inline"
+                  end
+      Translate.new(primitive,
                     V3.from_yaml(yaml["offset"]))
     when "rotate_y"
-      RotateY.new(primitives[yaml["instance"].as_s],
+      primitive = if yaml["instance"]?
+                    primitives[yaml["instance"].as_s]
+                  elsif yaml["inline"]?
+                    Hittable.from_yaml(yaml["inline"], materials, primitives)
+                  else
+                    raise "translate requires instance or inline"
+                  end
+      RotateY.new(primitive,
                   yaml["theta"].as_f)
     else
       raise "Invalid object type #{object_type}"

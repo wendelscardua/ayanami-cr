@@ -36,37 +36,6 @@ materials:
   light:
     type: diffuse_light
     texture: light
-primitives:
-  box1:
-    type: box
-    minimum:
-      - 0.0
-      - 0.0
-      - 0.0
-    maximum:
-      - 165.0
-      - 330.0
-      - 165.0
-    material: white
-  box1_rot:
-    type: rotate_y
-    instance: box1
-    theta: 15.0
-  box2:
-    type: box
-    minimum:
-      - 0.0
-      - 0.0
-      - 0.0
-    maximum:
-      - 165.0
-      - 165.0
-      - 165.0
-    material: white
-  box2_rot:
-    type: rotate_y
-    instance: box2
-    theta: -18.0
 world:
   - type: yzrect
     y0: 0.0
@@ -111,17 +80,43 @@ world:
     k: 555.0
     material: white
   - type: translate
-    instance: box1_rot
     offset:
       - 265.0
       - 0.0
       - 295.0
+    inline:
+      type: rotate_y
+      theta: 15.0
+      inline:
+        type: box
+        minimum:
+          - 0.0
+          - 0.0
+          - 0.0
+        maximum:
+          - 165.0
+          - 330.0
+          - 165.0
+        material: white
   - type: translate
-    instance: box2_rot
     offset:
       - 130.0
       - 0.0
       - 65.0
+    inline:
+      type: rotate_y
+      theta: -18.0
+      inline:
+        type: box
+        minimum:
+          - 0.0
+          - 0.0
+          - 0.0
+        maximum:
+          - 165.0
+          - 165.0
+          - 165.0
+        material: white
 camera:
   look_from:
     - 278.0
@@ -141,7 +136,7 @@ camera:
 options:
   width: 400
   height: 400
-  samples_per_pixel: 200
+  samples_per_pixel: 32
   max_depth: 50
   background:
     - 0.0
