@@ -1,0 +1,170 @@
+textures:
+  red:
+    type: solid_color
+    color:
+      - 0.65
+      - 0.05
+      - 0.05
+  white:
+    type: solid_color
+    color:
+      - 0.73
+      - 0.73
+      - 0.73
+  green:
+    type: solid_color
+    color:
+      - 0.12
+      - 0.45
+      - 0.15
+  light:
+    type: solid_color
+    color:
+      - 7.0
+      - 7.0
+      - 7.0
+  black_smoke:  
+    type: solid_color
+    color:
+      - 0.0
+      - 0.0
+      - 0.0
+  white_smoke:  
+    type: solid_color
+    color:
+      - 1.0
+      - 1.0
+      - 1.0  
+materials:
+  red:
+    type: lambertian
+    albedo: red
+  white:
+    type: lambertian
+    albedo: white
+  green:
+    type: lambertian
+    albedo: green
+  light:
+    type: diffuse_light
+    texture: light
+  black_smoke:
+    type: isotropic
+    albedo: black_smoke
+  white_smoke:
+    type: isotropic
+    albedo: white_smoke
+world:
+  - type: yzrect
+    y0: 0.0
+    y1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 555.0
+    material: green
+  - type: yzrect
+    y0: 0.0
+    y1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 0.0
+    material: red
+  - type: xzrect
+    x0: 113.0
+    x1: 443.0
+    z0: 127.0
+    z1: 432.0
+    k: 554.0
+    material: light
+  - type: xzrect
+    x0: 0.0
+    x1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 0.0
+    material: white
+  - type: xzrect
+    x0: 0.0
+    x1: 555.0
+    z0: 0.0
+    z1: 555.0
+    k: 555.0
+    material: white
+  - type: xyrect
+    x0: 0.0
+    x1: 555.0
+    y0: 0.0
+    y1: 555.0
+    k: 555.0
+    material: white
+  - type: constant_medium
+    density: 0.01
+    material: black_smoke
+    inline:
+      type: translate
+      offset:
+        - 265.0
+        - 0.0
+        - 295.0
+      inline:
+        type: rotate_y
+        theta: 15.0
+        inline:
+          type: box
+          minimum:
+            - 0.0
+            - 0.0
+            - 0.0
+          maximum:
+            - 165.0
+            - 330.0
+            - 165.0
+          material: white
+  - type: constant_medium
+    material: white_smoke
+    density: 0.01
+    inline:
+      type: translate
+      offset:
+        - 130.0
+        - 0.0
+        - 65.0
+      inline:
+        type: rotate_y
+        theta: -18.0
+        inline:
+          type: box
+          minimum:
+            - 0.0
+            - 0.0
+            - 0.0
+          maximum:
+            - 165.0
+            - 165.0
+            - 165.0
+          material: white
+camera:
+  look_from:
+    - 278.0
+    - 278.0
+    - -800.0
+  look_at:
+    - 278.0
+    - 278.0
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
+options:
+  width: 600
+  height: 600
+  samples_per_pixel: 200
+  max_depth: 50
+  background:
+    - 0.0
+    - 0.0
+    - 0.0
