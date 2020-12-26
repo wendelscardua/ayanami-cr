@@ -286,7 +286,7 @@ class XYRect < Hittable
                   v: (y - y0) / (y1 - y0)
   end
 
-  def bounding_box
+  def bounding_box(start_time, end_time)
     AABB.new(V3.new(x0, y0, k - 0.0001), V3.new(x1, y1, k + 0.0001))
   end
 end
@@ -324,7 +324,7 @@ class XZRect < Hittable
                   v: (z - z0) / (z1 - z0)
   end
 
-  def bounding_box
+  def bounding_box(start_time, end_time)
     AABB.new(V3.new(x0, k - 0.0001, z0), V3.new(x1, k + 0.0001, z1))
   end
 end
@@ -363,7 +363,7 @@ class YZRect < Hittable
                   v: (z - z0) / (z1 - z0)
   end
 
-  def bounding_box
+  def bounding_box(start_time, end_time)
     AABB.new(V3.new(k - 0.0001, y0, z0), V3.new(k + 0.0001, y1, z1))
   end
 end
@@ -392,7 +392,7 @@ class HittableBox < Hittable
     sides.hit(ray, t_min, t_max)
   end
 
-  def bounding_box
+  def bounding_box(start_time, end_time)
     AABB.new(minimum, maximum)
   end
 end
@@ -643,7 +643,7 @@ class ConstantMedium < Hittable
     return rec1
   end
 
-  def bounding_box
-    boundary.bounding_box
+  def bounding_box(start_time, end_time)
+    boundary.bounding_box(start_time, end_time)
   end
 end
