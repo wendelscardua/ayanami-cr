@@ -102,6 +102,20 @@ abstract class Hittable
       ConstantMedium.new(primitive,
                          yaml["density"].as_f,
                          materials[yaml["material"].as_s])
+    when "list"
+      list = HittableList.new
+      yaml["objects"].as_a.each do |object|
+        list << Hittable.from_yaml(object, materials, primitives)
+      end
+      list
+    when "bvh"
+      list = HittableList.new
+      yaml["objects"].as_a.each do |object|
+        list << Hittable.from_yaml(object, materials, primitives)
+      end
+      BVHNode.new(list,
+                  yaml["start_time"].as_f,
+                  yaml["end_time"].as_f)
     else
       raise "Invalid object type #{object_type}"
     end
