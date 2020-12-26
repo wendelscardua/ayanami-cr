@@ -157,6 +157,78 @@ class Sphere < Hittable
   end
 end
 
+class MovingSphere < Hittable
+  getter start_center, end_center, radius, material,
+         start_time, end_time
+  
+  def initialize(start_center : V3,
+                 end_center : V3,
+                 start_time : Float64,
+                 end_time : Float64,
+                 radius : Float64,
+                 material : Material)
+    super()
+    @start_center = start_center
+    @start_time = start_time
+    @end_center = end_center
+    @end_time = end_time
+    @radius = radius
+    @material = material
+  end
+
+  def center(time : Float64) : V3
+    start_center + (end_center - start_center) * ((time - start_time) / (end_time - start_time))
+  end
+  
+  def hit(ray, t_min, t_max) : HitRecord?
+    oc = ray.origin - center(ray.time)
+    a = ray.direction.norm_squared
+    half_b = oc.dot(ray.direction)
+    c = oc.norm_squared - radius * radius
+
+    discriminant = half_b * half_b - a * c
+    return nil if discriminant < 0
+
+    sqrtd = Math.sqrt(discriminant)
+
+    # Find the nearest root that lies in the acceptable range.
+    root = (-half_b - sqrtd) / a
+    if root < t_min || t_max < root
+      root = (-half_b + sqrtd) / a
+      return nil if root < t_min || t_max < root
+    end
+
+    p = ray.at(root)
+
+    outward_normal = (p - center(ray.time)) * (1.0 / radius)
+
+    u, v = get_sphere_uv(outward_normal)
+    
+    HitRecord.new t: root,
+                  p: p,
+                  material: material,
+                  normal: outward_normal,
+                  ray: ray,
+                  u: u,
+                  v: v
+  end
+
+    def bounding_box
+      r_vector = V3.new(radius, radius, radius)
+      AABB.surrounding_box(AABB.new(center(start_time) - r_vector,
+                                    center(start_time) + r_vector),
+                           AABB.new(center(end_time) - r_vector,
+                                    center(end_time) + r_vector))
+    end
+
+    private def get_sphere_uv(p : V3)
+      theta = Math.acos(-p.y)
+      phi = Math.atan2(-p.z, p.x) + Math::PI
+
+      { phi / (2 * Math::PI), theta / Math::PI }
+    end
+end
+
 class XYRect < Hittable
   getter x0 : Float64, x1 : Float64, y0 : Float64, y1 : Float64, k : Float64,
          material : Material
@@ -354,7 +426,7 @@ class Translate < Hittable
   end
 
   def hit(ray, t_min, t_max) : HitRecord?
-    moved_ray = Ray.new(ray.origin - offset, ray.direction)
+    moved_ray = Ray.new(ray.origin - offset, ray.direction, ray.time)
     hit_record = instance.hit(moved_ray, t_min, t_max)
     return if hit_record.nil?
     hit_record.p += offset
@@ -414,7 +486,8 @@ class RotateY < Hittable
                                  sin_theta * ray.origin.x + cos_theta * ray.origin.z),
                           V3.new(cos_theta * ray.direction.x - sin_theta * ray.direction.z,
                                  ray.direction.y,
-                                 sin_theta * ray.direction.x + cos_theta * ray.direction.z))
+                                 sin_theta * ray.direction.x + cos_theta * ray.direction.z),
+                          ray.time)
 
     hit_record = instance.hit(rotated_ray, t_min, t_max)
     return if hit_record.nil?
