@@ -605,3 +605,120 @@ class ConstantMedium < Hittable
     boundary.bounding_box(start_time, end_time)
   end
 end
+
+# Triangles based on l3kn/raytracer
+class Triangle < Hittable
+  getter a : V3, b : V3, c : V3, material : Material,
+         edge1 : V3, edge2 : V3, normal : V3,
+         box : AABB?
+
+  def initialize(@a, @b, @c, @material)
+    @edge1 = @b - @a
+    @edge2 = @c - @a
+    @normal = edge1.cross(edge2)
+  end
+
+  def hit(ray, t_min, t_max) : HitRecord?
+    p = ray.direction.cross(@edge2)
+    det = @edge1.dot(p)
+
+    # Ray lies in the plane of the triangle
+    # return nil if det > -EPSILON && det < EPSILON
+    return nil if det == 0.0
+
+    inv_det = 1.0 / det
+
+    t = ray.origin - @a
+    u = t.dot(p) * inv_det
+
+    # The intersection lies outside of the triangle
+    return nil if u < 0.0 || u > 1.0
+
+    q = t.cross(@edge1)
+    v = ray.direction.dot(q) * inv_det
+
+    # The intersection lies outside of the triangle
+    return nil if v < 0.0 || (u + v) > 1.0
+
+    t = @edge2.dot(q) * inv_det
+
+    if t < t_max && t > t_min
+      point = ray.at(t)
+      u, v = get_uv(ray, point, u, v)
+      normal = get_normal(ray, point, u, v)
+      return HitRecord.new(t: t, p: point, normal: normal, ray: ray, material: @material, u: u, v: v)
+    else
+      return nil
+    end
+  end
+
+  def bounding_box(start_time, end_time)
+    @box ||= AABB.new(V3.new(Math.min(Math.min(@a.x, @b.x), @c.x),
+                             Math.min(Math.min(@a.y, @b.y), @c.y),
+                             Math.min(Math.min(@a.z, @b.z), @c.z)),
+                      V3.new(Math.max(Math.max(@a.x, @b.x), @c.x),
+                             Math.max(Math.max(@a.y, @b.y), @c.y),
+                             Math.max(Math.max(@a.z, @b.z), @c.z)))
+  end
+
+  def get_uv(ray, point, u, v)
+    {u, v}
+  end
+
+  def get_normal(ray, point, u, v)
+    @normal.dot(ray.direction) < 0.0 ? @normal : -@normal
+  end
+
+  def barycentric_coordinates(p)
+    v0 = @b - @a
+    v1 = @c - @a
+    v2 = p - @a
+
+    d00 = v0.dot(v0)
+    d01 = v0.dot(v1)
+    d11 = v1.dot(v1)
+    d20 = v2.dot(v0)
+    d21 = v2.dot(v1)
+
+    denom = d00 * d11 - d01 * d01
+
+    v = (d11 * d20 - d01 * d21) / denom
+    w = (d00 * d21 - d01 * d20) / denom
+    u = 1.0 - v - w
+
+    V3.new(u, v, w)
+  end
+end
+
+class InterpolatedTriangle < Triangle
+  # Vertex normals
+  getter na : V3, nb : V3, nc : V3
+
+  def initialize(@a, @b, @c, @na, @nb, @nc, @material)
+    super(@a, @b, @c, @material)
+  end
+
+  def get_normal(ray, point, u, v)
+    bc = barycentric_coordinates(point)
+    V3.new(
+      @na.x * bc.x + @nb.x * bc.y + @nc.x * bc.z,
+      @na.y * bc.x + @nb.y * bc.y + @nc.y * bc.z,
+      @na.z * bc.x + @nb.z * bc.y + @nc.z * bc.z,
+    )
+  end
+end
+
+class TexturedTriangle < InterpolatedTriangle
+  # Texture coordinates
+  getter ta : V3, tb : V3, tc : V3
+
+  def initialize(@a, @b, @c, @na, @nb, @nc, @ta, @tb, @tc, @material)
+    super(@a, @b, @c, @na, @nb, @nc, @material)
+  end
+
+  def get_uv(ray, point, u, v)
+    bc = barycentric_coordinates(point)
+    texture_coords = @ta * bc.x + @tb * bc.y + @tc * bc.z
+    {texture_coords.x, texture_coords.y}
+  end
+end
