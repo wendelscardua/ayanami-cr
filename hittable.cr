@@ -2,15 +2,11 @@ class HitRecord
   property p : V3, normal : V3, t : Float64, front_face : Bool, material : Material,
            u : Float64, v : Float64
 
-  def initialize(p : V3, t : Float64, normal : V3, ray : Ray, material : Material,
-                 u : Float64, v : Float64)
-    @p = p
-    @t = t
+  def initialize(@p : V3, @t : Float64, normal : V3, ray : Ray,
+                 @material : Material,
+                 @u : Float64, @v : Float64)
     @front_face = ray.direction.dot(normal) < 0
     @normal = @front_face ? normal : -normal
-    @material = material
-    @u = u
-    @v = v
   end
 
   def set_face_normal(ray : Ray, normal : V3)
@@ -125,11 +121,7 @@ end
 class Sphere < Hittable
   getter center, radius, material
   
-  def initialize(center : V3, radius : Float64, material : Material)
-    super()
-    @center = center
-    @radius = radius
-    @material = material
+  def initialize(@center : V3, @radius : Float64, @material : Material)
   end
   
   def hit(ray, t_min, t_max) : HitRecord?
@@ -185,19 +177,12 @@ class MovingSphere < Hittable
   getter start_center, end_center, radius, material,
          start_time, end_time
   
-  def initialize(start_center : V3,
-                 end_center : V3,
-                 start_time : Float64,
-                 end_time : Float64,
-                 radius : Float64,
-                 material : Material)
-    super()
-    @start_center = start_center
-    @start_time = start_time
-    @end_center = end_center
-    @end_time = end_time
-    @radius = radius
-    @material = material
+  def initialize(@start_center : V3,
+                 @end_center : V3,
+                 @start_time : Float64,
+                 @end_time : Float64,
+                 @radius : Float64,
+                 @material : Material)
   end
 
   def center(time : Float64) : V3
@@ -257,13 +242,7 @@ class XYRect < Hittable
   getter x0 : Float64, x1 : Float64, y0 : Float64, y1 : Float64, k : Float64,
          material : Material
 
-  def initialize(x0, x1, y0, y1, k, material)
-    @x0 = x0
-    @x1 = x1
-    @y0 = y0
-    @y1 = y1
-    @k = k
-    @material = material
+  def initialize(@x0, @x1, @y0, @y1, @k, @material)
   end
 
   OUTWARD_NORMAL = V3.new(0.0, 0.0, 1.0)
@@ -295,13 +274,7 @@ class XZRect < Hittable
   getter x0 : Float64, x1 : Float64, z0 : Float64, z1 : Float64, k : Float64,
          material : Material
 
-  def initialize(x0, x1, z0, z1, k, material)
-    @x0 = x0
-    @x1 = x1
-    @z0 = z0
-    @z1 = z1
-    @k = k
-    @material = material
+  def initialize(@x0, @x1, @z0, @z1, @k, @material)
   end
 
   OUTWARD_NORMAL = V3.new(0.0, 1.0, 0.0)
@@ -334,13 +307,7 @@ class YZRect < Hittable
   getter y0 : Float64, y1 : Float64, z0 : Float64, z1 : Float64, k : Float64,
          material : Material
 
-  def initialize(y0, y1, z0, z1, k, material)
-    @y0 = y0
-    @y1 = y1
-    @z0 = z0
-    @z1 = z1
-    @k = k
-    @material = material
+  def initialize(@y0, @y1, @z0, @z1, @k, @material)
   end
 
   OUTWARD_NORMAL = V3.new(1.0, 0.0, 0.0)
@@ -372,10 +339,7 @@ class HittableBox < Hittable
   getter minimum : V3, maximum : V3, material : Material,
          sides : HittableList
 
-  def initialize(minimum : V3, maximum : V3, material : Material)
-    @minimum = minimum
-    @maximum = maximum
-    @material = material
+  def initialize(@minimum : V3, @maximum : V3, @material : Material)
     @sides = HittableList.new
 
     @sides << XYRect.new(@minimum.x, @maximum.x, @minimum.y, @maximum.y, @maximum.z, @material)
@@ -401,7 +365,6 @@ class HittableList < Hittable
   getter objects
   
   def initialize()
-    super()
     @objects = [] of Hittable
   end
 
@@ -444,9 +407,7 @@ end
 class Translate < Hittable
   getter instance : Hittable, offset : V3
 
-  def initialize(instance : Hittable, offset : V3)
-    @instance = instance
-    @offset = offset
+  def initialize(@instance : Hittable, @offset : V3)
   end
 
   def hit(ray, t_min, t_max) : HitRecord?
@@ -469,9 +430,8 @@ class RotateY < Hittable
   getter instance : Hittable, cos_theta : Float64, sin_theta : Float64,
          box : AABB?
 
-  def initialize(instance : Hittable, theta : Float64)
+  def initialize(@instance, theta : Float64)
     theta = theta * Math::PI / 180.0
-    @instance = instance
     @cos_theta = Math.cos(theta)
     @sin_theta = Math.sin(theta)
     @box = nil
@@ -606,12 +566,10 @@ class ConstantMedium < Hittable
          negative_inverse_density : Float64,
          phase_function : Material
 
-  def initialize(boundary,
+  def initialize(@boundary,
                  density,
-                 phase_function)
-    @boundary = boundary
+                 @phase_function)
     @negative_inverse_density = -1.0 / density
-    @phase_function = phase_function
   end
 
   def hit(ray, t_min, t_max) : HitRecord?
