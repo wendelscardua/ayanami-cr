@@ -40,10 +40,10 @@ class Ayanami
         end.sum / samples_per_pixel.to_f
 
         canvas[i, height - j - 1] = StumpyPNG::RGBA.from_rgb_n(clamp_color(color.x),
-                                                               clamp_color(color.y),
-                                                               clamp_color(color.z),
-                                                               8)
-        end
+          clamp_color(color.y),
+          clamp_color(color.z),
+          8)
+      end
     end
     StumpyPNG.write(canvas, output)
   end
@@ -54,11 +54,11 @@ class Ayanami
 
   BLACK = V3.zero
   WHITE = V3.new(1.0, 1.0, 1.0)
-  BLUE = V3.new(0.5, 0.7, 1.0)
+  BLUE  = V3.new(0.5, 0.7, 1.0)
 
   def ray_color(r : Ray, world : Hittable, depth : Int) : V3
     return BLACK if depth <= 0
-    
+
     hit_record = world.hit(r, 0.001, Float64::INFINITY)
     if hit_record
       emitted = hit_record.material.emitted(hit_record.u, hit_record.v, hit_record.p)
@@ -81,14 +81,14 @@ width = config["options"]["width"].as_i
 height = config["options"]["height"].as_i
 
 look_from = V3.new(config["camera"]["look_from"][0].as_f,
-                   config["camera"]["look_from"][1].as_f,
-                   config["camera"]["look_from"][2].as_f)
+  config["camera"]["look_from"][1].as_f,
+  config["camera"]["look_from"][2].as_f)
 look_at = V3.new(config["camera"]["look_at"][0].as_f,
-                 config["camera"]["look_at"][1].as_f,
-                 config["camera"]["look_at"][2].as_f)
+  config["camera"]["look_at"][1].as_f,
+  config["camera"]["look_at"][2].as_f)
 view_up = V3.new(config["camera"]["view_up"][0].as_f,
-                 config["camera"]["view_up"][1].as_f,
-                 config["camera"]["view_up"][2].as_f)
+  config["camera"]["view_up"][1].as_f,
+  config["camera"]["view_up"][2].as_f)
 vertical_fov = config["camera"]["vertical_fov"].as_f
 aperture = config["camera"]["aperture"].as_f
 focus_distance_factor = config["camera"]["focus_distance_factor"].as_f
@@ -136,10 +136,10 @@ config["world"].as_a.each do |object|
 end
 
 ayanami = Ayanami.new width: width, height: height,
-                      samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
-                      max_depth: config["options"]["max_depth"].as_i,
-                      world: BVHNode.new(world, start_time, end_time),
-                      camera: camera,
-                      background: Background.from_yaml(config["background"])
+  samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
+  max_depth: config["options"]["max_depth"].as_i,
+  world: BVHNode.new(world, start_time, end_time),
+  camera: camera,
+  background: Background.from_yaml(config["background"])
 
 ayanami.run(output: ARGV[1])

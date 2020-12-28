@@ -50,7 +50,7 @@ class Checker < Texture
   end
 
   def value(u : Float64, v : Float64, p : V3)
-    sines = Math.sin(10 * p.x) * Math.sin(10 * p.y) * Math.sin(10 * p.z);
+    sines = Math.sin(10 * p.x) * Math.sin(10 * p.y) * Math.sin(10 * p.z)
     if sines < 0
       odd.value(u, v, p)
     else
@@ -76,7 +76,7 @@ end
 
 class ImageTexture < Texture
   getter canvas : StumpyCore::Canvas,
-         width : Int32, height : Int32
+    width : Int32, height : Int32
 
   def initialize(filename : String)
     @canvas = StumpyPNG.read(filename)
@@ -89,7 +89,7 @@ class ImageTexture < Texture
   def value(u : Float64, v : Float64, p : V3)
     # Clamp input texture coordinates to [0,1] x [1,0]
     u = u.clamp(0.0, 1.0)
-    v = 1.0 - v.clamp(0.0, 1.0);  # Flip V to image coordinates
+    v = 1.0 - v.clamp(0.0, 1.0) # Flip V to image coordinates
 
     i = (u * width).to_i
     j = (v * height).to_i

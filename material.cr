@@ -1,6 +1,6 @@
 abstract class Material
   def scatter(ray : Ray, hit_record : HitRecord) : {Ray?, V3?}
-    {nil,nil}
+    {nil, nil}
   end
 
   BLACK = V3.new(0.0, 0.0, 0.0)
@@ -71,7 +71,7 @@ class Lambertian < Material
     end
     ray.origin = hit_record.p
     ray.direction = scatter_direction
-    { ray, albedo.value(hit_record.u, hit_record.v, hit_record.p) }
+    {ray, albedo.value(hit_record.u, hit_record.v, hit_record.p)}
   end
 end
 
@@ -134,7 +134,7 @@ class DiffuseLight < Material
   end
 
   def scatter(ray, hit_record)
-    { nil, nil }
+    {nil, nil}
   end
 
   def emitted(u, v, p)
@@ -154,7 +154,7 @@ class Isotropic < Material
     ray.direction = V3.random_in_unit_sphere
     {
       ray,
-      albedo.value(hit_record.u, hit_record.v, hit_record.p)
+      albedo.value(hit_record.u, hit_record.v, hit_record.p),
     }
-  end  
+  end
 end

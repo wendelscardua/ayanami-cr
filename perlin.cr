@@ -1,8 +1,8 @@
 class Perlin
   getter ranvec : Array(V3),
-         perm_x : Array(Int32),
-         perm_y : Array(Int32),
-         perm_z : Array(Int32)
+    perm_x : Array(Int32),
+    perm_y : Array(Int32),
+    perm_z : Array(Int32)
 
   def initialize
     @ranvec = (0..255).map { V3.random_vector(-1.0, 1.0).normalize! }

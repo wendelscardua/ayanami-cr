@@ -29,19 +29,19 @@ end
 
 struct Background::CubeMap < Background
   @right : StumpyPNG::Canvas
-  @left  : StumpyPNG::Canvas
-  @up    : StumpyPNG::Canvas
-  @down  : StumpyPNG::Canvas
+  @left : StumpyPNG::Canvas
+  @up : StumpyPNG::Canvas
+  @down : StumpyPNG::Canvas
   @front : StumpyPNG::Canvas
-  @back  : StumpyPNG::Canvas
+  @back : StumpyPNG::Canvas
 
   def initialize(folder)
     @right = StumpyPNG.read("#{folder}/posx.png")
-    @left  = StumpyPNG.read("#{folder}/negx.png")
-    @up    = StumpyPNG.read("#{folder}/posy.png")
-    @down  = StumpyPNG.read("#{folder}/negy.png")
+    @left = StumpyPNG.read("#{folder}/negx.png")
+    @up = StumpyPNG.read("#{folder}/posy.png")
+    @down = StumpyPNG.read("#{folder}/negy.png")
     @front = StumpyPNG.read("#{folder}/posz.png")
-    @back  = StumpyPNG.read("#{folder}/negz.png")    
+    @back = StumpyPNG.read("#{folder}/negz.png")
   end
 
   def value(ray)
@@ -91,7 +91,7 @@ struct Background::CubeMap < Background
 end
 
 struct Background::Sky < Background
-  BLUE = V3.new(0.5, 0.7, 1.0)
+  BLUE  = V3.new(0.5, 0.7, 1.0)
   WHITE = V3.new(1.0, 1.0, 1.0)
 
   def value(ray)
