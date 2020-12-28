@@ -7,7 +7,7 @@ materials:
       - 1.0
     fuzz: 0.01
 primitives:
-  metal-teapot:
+  metal-deer:
     type: object
     filename: ../models/Deer.obj
     material: Material
@@ -15,7 +15,7 @@ primitives:
     textured: false
 world:
   - type: translate
-    instance: metal-teapot
+    instance: metal-deer
     offset:
       - 0.0
       - 0.0
