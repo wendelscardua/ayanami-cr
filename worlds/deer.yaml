@@ -1,21 +1,11 @@
-textures:
-  brown:
-    type: solid_color
-    color:
-      - 0.6
-      - 0.5
-      - 0.05
 materials:
   Material:
-    type: lambertian
-    albedo: brown
-  metal:
     type: metal
     albedo:
       - 1.0
-      - 0.8
-      - 0.0
-    fuzz: 0.0
+      - 1.0
+      - 1.0
+    fuzz: 0.01
 primitives:
   metal-teapot:
     type: object
