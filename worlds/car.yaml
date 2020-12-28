@@ -1,0 +1,104 @@
+textures:
+  platform:
+    type: solid_color
+    color:
+      - 0.7
+      - 0.8
+      - 0.1
+  wheels:
+    type: solid_color
+    color:
+      - 0.1
+      - 0.1
+      - 0.1
+  engine:
+    type: solid_color
+    color:
+      - 0.7
+      - 0.2
+      - 0.9
+  headlight:
+    type: solid_color
+    color:
+      - 1.2
+      - 0.3
+      - 0.3
+  rear:
+    type: solid_color
+    color:
+      - 1.2
+      - 1.3
+      - 0.4
+materials:
+  Material:
+    type: metal
+    albedo:
+      - 1.0
+      - 1.0
+      - 1.0
+    fuzz: 0.1
+  car:
+    type: metal
+    albedo:
+      - 0.7
+      - 0.4
+      - 0.1
+    fuzz: 0.1
+  Platform:
+    type: lambertian
+    albedo: platform
+  glass:
+    type: dielectric
+    refraction_index: 1.7
+  wheels:
+    type: lambertian
+    albedo: wheels
+  engine:
+    type: lambertian
+    albedo: engine
+  headlight:
+    type: diffuse_light
+    texture: headlight
+  rear:
+    type: diffuse_light
+    texture: rear
+primitives:
+  car:
+    type: object
+    filename: ../models/Low-Poly-Racing-Car.obj
+    material: Material
+    interpolated: false
+    textured: false
+world:
+  - type: translate
+    instance: car
+    offset:
+      - 0.0
+      - 0.0
+      - 0.0
+camera:
+  look_from:
+    - 400.0
+    - 250.0
+    - 250.0
+  look_at:
+    - -100.0
+    - 80.0
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.01
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 400
+  height: 400
+  samples_per_pixel: 10
+  max_depth: 10
+background:
+  type: cubemap
+  folder: ../cubemaps/yokohama

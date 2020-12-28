@@ -55,10 +55,10 @@ module OBJ
 
               hittables << TexturedTriangle.new(a, b, c, na, nb, nc, ta, tb, tc, material)
             else
-              hittables << InterpolatedTriangle.new(a, b, c, na, nb, nc, mat)
+              hittables << InterpolatedTriangle.new(a, b, c, na, nb, nc, material)
             end
           else
-            hittables << Triangle.new(a, b, c, mat)
+            hittables << Triangle.new(a, b, c, material)
           end
         end
       end
