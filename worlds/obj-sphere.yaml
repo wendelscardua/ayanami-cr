@@ -1,0 +1,43 @@
+materials:
+  metal:
+    type: dielectric
+    refraction_index: 1.5
+world:
+  - type: object
+    filename: ../models/globe-sphere.obj
+    material: metal
+    interpolated: true
+    textured: false
+  - type: sphere
+    center:
+      - 0.0
+      - 1.0
+      - 0.0
+    radius: 0.5
+    material: metal
+camera:
+  look_from:
+    - 3.0
+    - 1.5
+    - 3.0
+  look_at:
+    - 0.0
+    - 0.5
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.02
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 400
+  height: 400
+  samples_per_pixel: 100
+  max_depth: 20
+background:
+  type: cubemap
+  folder: ../cubemaps/ballroom

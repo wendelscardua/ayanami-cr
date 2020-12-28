@@ -29,10 +29,10 @@ module OBJ
         vertices << V3.new(cords[0], cords[1], cords[2])
       when "vn"
         cords = tokens[1, 3].map(&.to_f)
-        normals << V3.new(cords[0], cords[1], cords[2])
+        normals << V3.new(cords[0], cords[1], cords[2]).normalize!
       when "vt"
         cords = tokens[1, 3].map(&.to_f)
-        texture_coords << V3.new(cords[0], cords[1], cords[2])
+        texture_coords << V3.new(cords[0], cords.size >= 2 ? cords[1] : 0.0, cords.size == 3 ? cords[2] : 0.0)
       when "f"
         vs = tokens[1..-1].map { |i| i.split("/") }
 
