@@ -1,0 +1,58 @@
+textures:
+  brown:
+    type: solid_color
+    color:
+      - 0.6
+      - 0.5
+      - 0.05
+materials:
+  Material:
+    type: lambertian
+    albedo: brown
+  metal:
+    type: metal
+    albedo:
+      - 1.0
+      - 0.8
+      - 0.0
+    fuzz: 0.0
+primitives:
+  metal-teapot:
+    type: object
+    filename: ../models/Deer.obj
+    material: Material
+    interpolated: false
+    textured: false
+world:
+  - type: translate
+    instance: metal-teapot
+    offset:
+      - 0.0
+      - 0.0
+      - 0.0
+camera:
+  look_from:
+    - 1000.0
+    - 500.0
+    - 500.0
+  look_at:
+    - -100.0
+    - 200.0
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.01
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 400
+  height: 400
+  samples_per_pixel: 100
+  max_depth: 10
+background:
+  type: cubemap
+  folder: ../cubemaps/yokohama
