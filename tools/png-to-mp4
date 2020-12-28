@@ -1,0 +1,1 @@
+ffmpeg -loop 1 -t 30 -r 25 -i ballroom-%04d.png -i ballroom-%04d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p video.mp4

@@ -1,0 +1,70 @@
+textures:
+  light:
+    type: solid_color
+    color: [8.0, 8.0, 0.5]
+materials:
+  metal:
+    type: metal
+    albedo: [0.8, 0.8, 0.8]
+    fuzz: 0.01
+  glass:
+    type: dielectric
+    refraction_index: 1.5
+  light:
+    type: diffuse_light
+    texture: light
+world:
+  - type: sphere
+    center:
+      - 0.0
+      - 1.0
+      - 0.0
+    radius: 0.5
+    material: glass
+  - type: sphere
+    center:
+      - 0.0
+      - 0.0
+      - 0.0
+    radius: 0.5
+    material: glass
+  - type: yzrect
+    y0: 0.0
+    y1: 0.5
+    z0: -0.5
+    z1: 0.5
+    k: -2.0
+    material: light
+  - type: xyrect
+    x0: -1.0
+    x1: 1.0
+    y0: -1.5
+    y1: 1.5
+    k: -2.0
+    material: metal
+camera:
+  look_from:
+    - 3.0
+    - 1.5
+    - 3.0
+  look_at:
+    - 0.0
+    - 0.5
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.05
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 800
+  height: 600
+  samples_per_pixel: 200
+  max_depth: 20
+background:
+  type: cubemap
+  folder: ../cubemaps/ballroom
