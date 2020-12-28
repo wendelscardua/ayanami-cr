@@ -1,0 +1,113 @@
+textures:
+  solid-blue:
+    type: solid_color
+    color:
+      - 0.1
+      - 0.2
+      - 0.6
+  dark:
+    type: solid_color
+    color:
+      - 0.1
+      - 0.2
+      - 0.2
+  light:
+    type: solid_color
+    color:
+      - 0.9
+      - 0.8
+      - 0.7
+  checker:
+    type: checker
+    odd: dark
+    even: light
+  sun:
+    type: solid_color
+    color:
+      - 7.0
+      - 7.0
+      - 7.0
+materials:
+  metal:
+    type: metal
+    albedo:
+      - 1.0
+      - 0.8
+      - 0.0
+    fuzz: 0.0
+  blue:
+    type: lambertian
+    albedo: solid-blue
+  ground:
+    type: lambertian
+    albedo: checker
+  sun:
+    type: diffuse_light
+    texture: sun
+primitives:
+  metal-teapot:
+    type: object
+    filename: models/teapot.obj
+    material: metal
+    interpolated: true
+    textured: false
+  blue-teapot:
+    type: object
+    filename: models/teapot.obj
+    material: blue
+    interpolated: true
+    textured: false
+world:
+  - type: translate
+    instance: metal-teapot
+    offset:
+      - -1.0
+      - 0.0
+      - 0.0
+  - type: translate
+    instance: blue-teapot
+    offset:
+      - 1.0
+      - 0.0
+      - 0.0
+  - type: sphere
+    center:
+      - 0.0
+      - -1001.0
+      - 0.0
+    radius: 1000.0
+    material: ground
+  - type: sphere
+    center:
+      - 0.0
+      - 6.0
+      - -1.0
+    radius: 2.0
+    material: sun
+camera:
+  look_from:
+    - -1.5
+    - 1.5
+    - -2.0
+  look_at:
+    - 0.0
+    - 0.5
+    - 0.0
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 40.0
+  aperture: 0.1
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 80
+  height: 80
+  samples_per_pixel: 100
+  max_depth: 10
+  background:
+    - 0.0
+    - 0.0
+    - 0.0

@@ -2,6 +2,7 @@ require "crystaledge"
 require "stumpy_png"
 require "yaml"
 require "./aabb"
+require "./background"
 require "./camera"
 require "./hittable"
 require "./material"
@@ -16,17 +17,10 @@ alias V3 = CrystalEdge::Vector3
 class Ayanami
   property width, height, samples_per_pixel, max_depth, world, camera, background
 
-  def initialize(width : Int32, height : Int32,
-                 samples_per_pixel : Int32, max_depth : Int32,
-                 world : Hittable, camera : Camera,
-                 background : V3)
-    @width = width
-    @height = height
-    @samples_per_pixel = samples_per_pixel
-    @max_depth = max_depth
-    @world = world
-    @camera = camera
-    @background = background
+  def initialize(@width : Int32, @height : Int32,
+                 @samples_per_pixel : Int32, @max_depth : Int32,
+                 @world : Hittable, @camera : Camera,
+                 @background : Background)
   end
 
   def run(output : String)
@@ -42,7 +36,7 @@ class Ayanami
           u = (i + rand) / (width - 1)
           v = (j + rand) / (height - 1)
           ray = camera.ray(u, v)
-          ray_color(ray, background, world, max_depth)
+          ray_color(ray, world, max_depth)
         end.sum / samples_per_pixel.to_f
 
         canvas[i, height - j - 1] = StumpyPNG::RGBA.from_rgb_n(clamp_color(color.x),
@@ -62,7 +56,7 @@ class Ayanami
   WHITE = V3.new(1.0, 1.0, 1.0)
   BLUE = V3.new(0.5, 0.7, 1.0)
 
-  def ray_color(r : Ray, background : V3, world : Hittable, depth : Int) : V3
+  def ray_color(r : Ray, world : Hittable, depth : Int) : V3
     return BLACK if depth <= 0
     
     hit_record = world.hit(r, 0.001, Float64::INFINITY)
@@ -71,12 +65,12 @@ class Ayanami
 
       scattered_ray, attenuation = hit_record.material.scatter(r, hit_record)
       if scattered_ray && attenuation
-        emitted + ray_color(scattered_ray, background, world, depth - 1) * attenuation
+        emitted + ray_color(scattered_ray, world, depth - 1) * attenuation
       else
         emitted
       end
     else
-      background
+      background.value(r)
     end
   end
 end
@@ -146,6 +140,6 @@ ayanami = Ayanami.new width: width, height: height,
                       max_depth: config["options"]["max_depth"].as_i,
                       world: BVHNode.new(world, start_time, end_time),
                       camera: camera,
-                      background: V3.from_yaml(config["options"]["background"])
+                      background: Background.from_yaml(config["background"])
 
 ayanami.run(output: ARGV[1])
