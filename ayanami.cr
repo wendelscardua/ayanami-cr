@@ -5,6 +5,7 @@ require "./aabb"
 require "./camera"
 require "./hittable"
 require "./material"
+require "./obj"
 require "./perlin"
 require "./ray"
 require "./texture"
@@ -32,7 +33,10 @@ class Ayanami
     canvas = StumpyPNG::Canvas.new(@width, @height)
 
     (height - 1).downto(0) do |j|
-      puts j if j % 50 == 0
+      if j % 50 == 0
+        puts j
+        StumpyPNG.write(canvas, output) if j > 0
+      end
       0.upto(width - 1) do |i|
         color = samples_per_pixel.times.map do
           u = (i + rand) / (width - 1)
@@ -45,7 +49,7 @@ class Ayanami
                                                                clamp_color(color.y),
                                                                clamp_color(color.z),
                                                                8)
-      end
+        end
     end
     StumpyPNG.write(canvas, output)
   end
@@ -110,15 +114,17 @@ camera = Camera.new(
 )
 
 textures = Hash(String, Texture).new
-
-config["textures"].as_h.each do |name, args|
-  textures[name.as_s] = Texture.from_yaml(args, textures: textures)
+if config["textures"]?
+  config["textures"].as_h.each do |name, args|
+    textures[name.as_s] = Texture.from_yaml(args, textures: textures)
+  end
 end
 
 materials = Hash(String, Material).new
-
-config["materials"].as_h.each do |name, args|
-  materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
+if config["materials"]?
+  config["materials"].as_h.each do |name, args|
+    materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
+  end
 end
 
 primitives = Hash(String, Hittable).new
