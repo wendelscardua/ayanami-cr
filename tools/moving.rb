@@ -2,7 +2,7 @@
 
 require 'yaml'
 
-template = YAML.safe_load(File.read(ARGV[0]))
+template = YAML.load(File.read(ARGV[0]))
 
 # constants
 start_t = 0.0
@@ -16,17 +16,32 @@ get = lambda do |path|
   path.split('.').reduce(template) { |a,e| a[e] }
 end
 
-look_radius = 5.0
 
-t_function = lambda do |t|
-  center = get.('camera.look_at')
-  look_from = [
-    center[0] + look_radius * Math.cos(2 * t * Math::PI),
-    center[1] + 0.25 * Math.sin(2 * t * Math::PI),
-    center[2] + look_radius * Math.sin(2 * t * Math::PI)
-  ]
-  template['camera']['look_from'] = look_from
-end
+t_function =
+  case ARGV[0]
+  when 'worlds/ballroom.yaml'
+    look_radius = 5.0
+    lambda do |t|
+      center = get.('camera.look_at')
+      look_from = [
+        center[0] + look_radius * Math.cos(2 * t * Math::PI),
+        center[1] + 0.25 * Math.sin(2 * t * Math::PI),
+        center[2] + look_radius * Math.sin(2 * t * Math::PI)
+      ]
+      template['camera']['look_from'] = look_from
+    end
+  when 'worlds/final-scene.yaml'
+    look_radius = ((200.0**2) + (600.0**2))**0.5
+    lambda do |t|
+      center = get.('camera.look_at')
+      look_from = [
+        center[0] + look_radius * Math.cos(2 * t * Math::PI),
+        center[1] + 50 * Math.sin(2 * t * Math::PI),
+        center[2] + look_radius * Math.sin(2 * t * Math::PI)
+      ]
+      template['camera']['look_from'] = look_from
+    end
+  end
 
 t = start_t
 fc = 0

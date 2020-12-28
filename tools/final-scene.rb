@@ -27,10 +27,9 @@ require_relative './world-tools.rb'
     height: 800
     samples_per_pixel: 64
     max_depth: 50
-    background:
-      - 0.0
-      - 0.0
-      - 0.0
+  background:
+    type: color
+    color: [0.0, 0.0, 0.0]
 YAML
 
 mat 'ground', 'lambertian', albedo: color(0.48, 0.83, 0.53)
