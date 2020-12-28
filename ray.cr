@@ -1,4 +1,4 @@
-class Ray
+struct Ray
   property origin, direction, time
 
   def initialize(origin : V3, direction : V3, time : Float64)

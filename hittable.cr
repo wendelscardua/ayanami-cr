@@ -1,4 +1,4 @@
-class HitRecord
+struct HitRecord
   property p : V3, normal : V3, t : Float64, front_face : Bool, material : Material,
            u : Float64, v : Float64
 
