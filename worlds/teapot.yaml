@@ -1,4 +1,3 @@
-textures:
 materials:
   metal:
     type: metal
@@ -21,9 +20,6 @@ world:
       - 0.0
       - 0.0
       - 0.0
-background:
-  type: cubemap
-  folder: ../cubemaps/yokohama
 camera:
   look_from:
     - -1.5
@@ -43,7 +39,10 @@ camera:
   start_time: 0.0
   end_time: 1.0
 options:
-  width: 80
-  height: 80
+  width: 400
+  height: 400
   samples_per_pixel: 100
   max_depth: 10
+background:
+  type: cubemap
+  folder: ../cubemaps/yokohama

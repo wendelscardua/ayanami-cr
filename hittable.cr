@@ -113,14 +113,15 @@ abstract class Hittable
                   yaml["start_time"].as_f,
                   yaml["end_time"].as_f)
     when "object"
-      OBJ.parse(yaml["filename"].as_s,
-                materials[yaml["material"].as_s],
-                yaml["interpolated"] == true,
-                yaml["textured"] == true,
-                materials)
+      hl = OBJ.parse(yaml["filename"].as_s,
+                     materials[yaml["material"].as_s],
+                     yaml["interpolated"] == true,
+                     yaml["textured"] == true,
+                     materials)
+      BVHNode.new(hl, 0.0, 1.0)
     else
       raise "Invalid object type #{object_type}"
-    end
+                  end
   end
 end
 

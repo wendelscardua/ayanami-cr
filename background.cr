@@ -4,13 +4,14 @@ abstract struct Background
   end
 
   def self.from_yaml(yaml : YAML::Any)
-    puts yaml.inspect
     bg_type = yaml["type"].as_s
     case bg_type
     when "color"
       Background::Color.new(V3.from_yaml(yaml["color"]))
     when "cubemap"
       Background::CubeMap.new(yaml["folder"].as_s)
+    when "sky"
+      Background::Sky.new
     else
       raise "Invalid background type #{bg_type}"
     end
@@ -43,7 +44,7 @@ struct Background::CubeMap < Background
     @back  = StumpyPNG.read("#{folder}/negz.png")    
   end
 
-  def get(ray)
+  def value(ray)
     dir = ray.direction
 
     if dir.x.abs >= dir.y.abs && dir.x.abs >= dir.z.abs
@@ -86,5 +87,15 @@ struct Background::CubeMap < Background
     j = (v * texture.height).to_i
     r, g, b = texture[i, j].to_rgb8
     V3.new(COLOR_SCALE * r, COLOR_SCALE * g, COLOR_SCALE * b)
+  end
+end
+
+struct Background::Sky < Background
+  BLUE = V3.new(0.5, 0.7, 1.0)
+  WHITE = V3.new(1.0, 1.0, 1.0)
+
+  def value(ray)
+    t = 0.5 * (ray.direction.normalize.y + 1.0)
+    BLUE * t + WHITE * (1.0 - t)
   end
 end
