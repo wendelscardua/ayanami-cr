@@ -1,0 +1,1 @@
+ffmpeg -loop 1 -t 30 -i renders/movies/final-scene/%04d.png -c:v libx264 -vf fps=60 -pix_fmt yuv420p -crf 15 renders/movies/final-scene.mp4
