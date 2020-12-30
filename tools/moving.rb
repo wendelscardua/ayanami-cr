@@ -41,6 +41,17 @@ t_function =
       ]
       template['camera']['look_from'] = look_from
     end
+  when 'worlds/teapots.yaml'
+    look_radius = ((1.5**2) + (3.0**2))**0.5
+    lambda do |t|
+      center = get.('camera.look_at')
+      look_from = [
+        center[0] + look_radius * Math.cos(2 * t * Math::PI),
+        1.5,
+        center[2] + look_radius * Math.sin(2 * t * Math::PI)
+      ]
+      template['camera']['look_from'] = look_from
+    end
   end
 
 t = start_t

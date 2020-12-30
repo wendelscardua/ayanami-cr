@@ -73,73 +73,75 @@ class Ayanami
       background.value(r)
     end
   end
+
+  def self.from_yaml(config : YAML::Any)
+    width = config["options"]["width"].as_i
+    height = config["options"]["height"].as_i
+
+    look_from = V3.new(config["camera"]["look_from"][0].as_f,
+                       config["camera"]["look_from"][1].as_f,
+                       config["camera"]["look_from"][2].as_f)
+    look_at = V3.new(config["camera"]["look_at"][0].as_f,
+                     config["camera"]["look_at"][1].as_f,
+                     config["camera"]["look_at"][2].as_f)
+    view_up = V3.new(config["camera"]["view_up"][0].as_f,
+                     config["camera"]["view_up"][1].as_f,
+                     config["camera"]["view_up"][2].as_f)
+    vertical_fov = config["camera"]["vertical_fov"].as_f
+    aperture = config["camera"]["aperture"].as_f
+    focus_distance_factor = config["camera"]["focus_distance_factor"].as_f
+    start_time = config["camera"]["start_time"].as_f
+    end_time = config["camera"]["end_time"].as_f
+
+    camera = Camera.new(
+      look_from: look_from,
+      look_at: look_at,
+      view_up: view_up,
+      vertical_fov: vertical_fov,
+      aperture: aperture,
+      focus_distance: (look_from - look_at).magnitude * focus_distance_factor,
+      aspect_ratio: width.to_f / height,
+      start_time: start_time,
+      end_time: end_time
+    )
+
+    textures = Hash(String, Texture).new
+    if config["textures"]?
+      config["textures"].as_h.each do |name, args|
+        textures[name.as_s] = Texture.from_yaml(args, textures: textures)
+      end
+    end
+
+    materials = Hash(String, Material).new
+    if config["materials"]?
+      config["materials"].as_h.each do |name, args|
+        materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
+      end
+    end
+
+    primitives = Hash(String, Hittable).new
+
+    if config["primitives"]?
+      config["primitives"].as_h.each do |name, args|
+        primitives[name.as_s] = Hittable.from_yaml(yaml: args, materials: materials, primitives: primitives)
+      end
+    end
+
+    world = HittableList.new
+
+    config["world"].as_a.each do |object|
+      world << Hittable.from_yaml(yaml: object, materials: materials, primitives: primitives)
+    end
+
+    Ayanami.new width: width, height: height,
+                samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
+                max_depth: config["options"]["max_depth"].as_i,
+                world: BVHNode.new(world, start_time, end_time),
+                camera: camera,
+                background: Background.from_yaml(config["background"])
+  end
 end
 
 config = YAML.parse(File.read(ARGV[0]))
 
-width = config["options"]["width"].as_i
-height = config["options"]["height"].as_i
-
-look_from = V3.new(config["camera"]["look_from"][0].as_f,
-  config["camera"]["look_from"][1].as_f,
-  config["camera"]["look_from"][2].as_f)
-look_at = V3.new(config["camera"]["look_at"][0].as_f,
-  config["camera"]["look_at"][1].as_f,
-  config["camera"]["look_at"][2].as_f)
-view_up = V3.new(config["camera"]["view_up"][0].as_f,
-  config["camera"]["view_up"][1].as_f,
-  config["camera"]["view_up"][2].as_f)
-vertical_fov = config["camera"]["vertical_fov"].as_f
-aperture = config["camera"]["aperture"].as_f
-focus_distance_factor = config["camera"]["focus_distance_factor"].as_f
-start_time = config["camera"]["start_time"].as_f
-end_time = config["camera"]["end_time"].as_f
-
-camera = Camera.new(
-  look_from: look_from,
-  look_at: look_at,
-  view_up: view_up,
-  vertical_fov: vertical_fov,
-  aperture: aperture,
-  focus_distance: (look_from - look_at).magnitude * focus_distance_factor,
-  aspect_ratio: width.to_f / height,
-  start_time: start_time,
-  end_time: end_time
-)
-
-textures = Hash(String, Texture).new
-if config["textures"]?
-  config["textures"].as_h.each do |name, args|
-    textures[name.as_s] = Texture.from_yaml(args, textures: textures)
-  end
-end
-
-materials = Hash(String, Material).new
-if config["materials"]?
-  config["materials"].as_h.each do |name, args|
-    materials[name.as_s] = Material.from_yaml(yaml: args, textures: textures)
-  end
-end
-
-primitives = Hash(String, Hittable).new
-
-if config["primitives"]?
-  config["primitives"].as_h.each do |name, args|
-    primitives[name.as_s] = Hittable.from_yaml(yaml: args, materials: materials, primitives: primitives)
-  end
-end
-
-world = HittableList.new
-
-config["world"].as_a.each do |object|
-  world << Hittable.from_yaml(yaml: object, materials: materials, primitives: primitives)
-end
-
-ayanami = Ayanami.new width: width, height: height,
-  samples_per_pixel: config["options"]["samples_per_pixel"].as_i,
-  max_depth: config["options"]["max_depth"].as_i,
-  world: BVHNode.new(world, start_time, end_time),
-  camera: camera,
-  background: Background.from_yaml(config["background"])
-
-ayanami.run(output: ARGV[1])
+Ayanami.from_yaml(config).run(output: ARGV[1])
