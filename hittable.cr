@@ -98,6 +98,19 @@ abstract class Hittable
       ConstantMedium.new(primitive,
         yaml["density"].as_f,
         materials[yaml["material"].as_s])
+    when "mandelbulb"
+      Mandelbulb.new(
+        materials[yaml["material"].as_s],
+        yaml["iterations"].as_i,
+        yaml["power"].as_f
+      )
+    when "menger_sponge"
+      MengerSponge.new(
+        materials[yaml["material"].as_s],
+        V3.from_yaml(yaml["offset"]),
+        yaml["iterations"].as_i,
+        yaml["scale"].as_f
+      )
     when "list"
       list = HittableList.new
       yaml["objects"].as_a.each do |object|
@@ -110,14 +123,14 @@ abstract class Hittable
         list << Hittable.from_yaml(object, materials, primitives)
       end
       BVHNode.new(list,
-        yaml["start_time"].as_f,
-        yaml["end_time"].as_f)
+                  yaml["start_time"].as_f,
+                  yaml["end_time"].as_f)
     when "object"
       hl = OBJ.parse(yaml["filename"].as_s,
-        materials[yaml["material"].as_s],
-        yaml["interpolated"] == true,
-        yaml["textured"] == true,
-        materials)
+                     materials[yaml["material"].as_s],
+                     yaml["interpolated"] == true,
+                     yaml["textured"] == true,
+                     materials)
       BVHNode.new(hl, 0.0, 1.0)
     else
       raise "Invalid object type #{object_type}"
@@ -129,6 +142,9 @@ class Sphere < Hittable
   getter center, radius, material
 
   def initialize(@center : V3, @radius : Float64, @material : Material)
+  end
+
+  def self.from_yaml(yaml : YAML::Any)
   end
 
   def hit(ray, t_min, t_max) : HitRecord?
@@ -156,28 +172,28 @@ class Sphere < Hittable
     u, v = get_sphere_uv(outward_normal)
 
     HitRecord.new t: root,
-      p: p,
-      material: material,
-      normal: outward_normal,
-      ray: ray,
-      u: u,
-      v: v
-  end
+                  p: p,
+                  material: material,
+                  normal: outward_normal,
+                  ray: ray,
+                  u: u,
+                  v: v
+    end
 
-  def bounding_box(start_time, end_time)
-    r_vector = V3.new(radius, radius, radius)
-    AABB.new(
-      center - r_vector,
-      center + r_vector
-    )
-  end
+    def bounding_box(start_time, end_time)
+      r_vector = V3.new(radius, radius, radius)
+      AABB.new(
+        center - r_vector,
+        center + r_vector
+      )
+    end
 
-  private def get_sphere_uv(p : V3)
-    theta = Math.acos(-p.y)
-    phi = Math.atan2(-p.z, p.x) + Math::PI
+    private def get_sphere_uv(p : V3)
+      theta = Math.acos(-p.y)
+      phi = Math.atan2(-p.z, p.x) + Math::PI
 
-    {phi / (2 * Math::PI), theta / Math::PI}
-  end
+      {phi / (2 * Math::PI), theta / Math::PI}
+    end
 end
 
 class MovingSphere < Hittable
@@ -721,5 +737,120 @@ class TexturedTriangle < InterpolatedTriangle
     bc = barycentric_coordinates(point)
     texture_coords = @ta * bc.x + @tb * bc.y + @tc * bc.z
     {texture_coords.x, texture_coords.y}
+  end
+end
+
+abstract class DistanceEstimatable < Hittable
+  MAX_STEPS = 1000
+  EPSILON = 0.00001
+
+  property material : Material
+
+  def initialize(@material : Material)
+  end
+
+  def bounding_box(start_time, end_time)
+    AABB.new(V3.new(-Float64::INFINITY, -Float64::INFINITY, -Float64::INFINITY),
+             V3.new(Float64::INFINITY, Float64::INFINITY, Float64::INFINITY))
+  end
+
+  def distance_estimate(point) : Float64
+    raise "Not implemented"
+  end
+
+  def hit(ray : Ray, t_min : Float, t_max : Float) : HitRecord?
+    total_distance = 0.0
+
+    point = ray.origin
+
+    return nil if distance_estimate(point) < t_min
+
+    steps = 0
+    MAX_STEPS.times do
+      point = ray.at(total_distance)
+      distance = distance_estimate(point)
+      total_distance += distance
+
+      return nil if total_distance >= t_max
+
+      break if distance < EPSILON
+
+      steps += 1
+    end
+
+    x_dir = V3.new(EPSILON, 0.0, 0.0)
+    y_dir = V3.new(0.0, EPSILON, 0.0)
+    z_dir = V3.new(0.0, 0.0, EPSILON)
+
+    normal = V3.new(
+      distance_estimate(point + x_dir) - distance_estimate(point - x_dir),
+      distance_estimate(point + y_dir) - distance_estimate(point - y_dir),
+      distance_estimate(point + z_dir) - distance_estimate(point - z_dir)
+    ).normalize!
+
+    return ::HitRecord.new(
+      t: total_distance,
+      p: point + normal * EPSILON * 20.0,
+      ray: ray,
+      normal: normal,
+      material: @material,
+      u: steps.to_f / MAX_STEPS, v: 0.0
+    )
+  end
+end
+
+class Mandelbulb < DistanceEstimatable
+  def initialize(@material : Material, @iterations = 10, @power = 8.0); end
+
+  def distance_estimate(pos)
+    z = pos
+    dr = 1.0
+    r = 0.0
+
+    @iterations.times do
+      r = z.magnitude
+      break if r > 1000.0
+
+      theta = Math.acos(z.z / r)
+      phi = Math.atan2(z.y, z.x)
+
+      dr = (r ** (@power - 1)) * @power * dr + 1.0
+
+      zr = r ** @power
+      theta = theta*@power
+      phi = phi*@power
+
+      sin_theta = Math.sin(theta)
+
+      z = V3.new(
+        sin_theta * Math.cos(phi) * zr + pos.x,
+        sin_theta * Math.sin(phi) * zr + pos.y,
+        Math.cos(theta) * zr + pos.z
+      )
+    end
+
+    0.5 * Math.log(r) * r / dr
+  end
+end
+
+class MengerSponge < DistanceEstimatable
+  ONE = V3.one
+
+  def initialize(@material : Material, @offset : V3, @iterations = 4, @scale = 3.0)
+  end
+
+  def distance_estimate(pos)
+    @iterations.times do
+      pos.x, pos.y, pos.z = { pos.x.abs, pos.y.abs, pos.z.abs }
+
+      pos.x, pos.y, pos.z = { pos.y, pos.x, pos.z } if pos.x < pos.y
+      pos.x, pos.y, pos.z  = { pos.x, pos.z, pos.y } if pos.y < pos.z
+      pos.x, pos.y, pos.z  = { pos.y, pos.x, pos.z } if pos.x < pos.y
+
+      pos = pos * @scale - @offset * (@scale - 1.0)
+      pos = V3.new(pos.x, pos.y, pos.z + @offset.z * (@scale - 1.0)) if pos.z < -0.5 * @offset.z * (@scale - 1.0)
+    end
+    
+    pos.magnitude * (@scale ** (-@iterations))
   end
 end
