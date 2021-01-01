@@ -741,7 +741,7 @@ class TexturedTriangle < InterpolatedTriangle
 end
 
 abstract class DistanceEstimatable < Hittable
-  MAX_STEPS = 1000
+  MAX_STEPS = 500
   EPSILON = 0.00001
 
   property material : Material
@@ -759,6 +759,9 @@ abstract class DistanceEstimatable < Hittable
   end
 
   def hit(ray : Ray, t_min : Float, t_max : Float) : HitRecord?
+    step = EPSILON
+    minimum_distance = EPSILON
+
     total_distance = 0.0
 
     point = ray.origin
@@ -778,9 +781,9 @@ abstract class DistanceEstimatable < Hittable
       steps += 1
     end
 
-    x_dir = V3.new(EPSILON, 0.0, 0.0)
-    y_dir = V3.new(0.0, EPSILON, 0.0)
-    z_dir = V3.new(0.0, 0.0, EPSILON)
+    x_dir = V3.new(step, 0.0, 0.0)
+    y_dir = V3.new(0.0, step, 0.0)
+    z_dir = V3.new(0.0, 0.0, step)
 
     normal = V3.new(
       distance_estimate(point + x_dir) - distance_estimate(point - x_dir),
@@ -788,19 +791,22 @@ abstract class DistanceEstimatable < Hittable
       distance_estimate(point + z_dir) - distance_estimate(point - z_dir)
     ).normalize!
 
-    return ::HitRecord.new(
+    return HitRecord.new(
       t: total_distance,
-      p: point + normal * EPSILON * 20.0,
+      p: ray.at(total_distance),
       ray: ray,
       normal: normal,
       material: @material,
-      u: steps.to_f / MAX_STEPS, v: 0.0
+      u: steps.to_f / MAX_STEPS,
+      v: 0.0
     )
   end
 end
 
 class Mandelbulb < DistanceEstimatable
-  def initialize(@material : Material, @iterations = 10, @power = 8.0); end
+  def initialize(@material : Material, @iterations = 10, @power = 8.0)
+    super(@material)
+  end
 
   def distance_estimate(pos)
     z = pos
@@ -848,7 +854,7 @@ class MengerSponge < DistanceEstimatable
       pos.x, pos.y, pos.z  = { pos.y, pos.x, pos.z } if pos.x < pos.y
 
       pos = pos * @scale - @offset * (@scale - 1.0)
-      pos = V3.new(pos.x, pos.y, pos.z + @offset.z * (@scale - 1.0)) if pos.z < -0.5 * @offset.z * (@scale - 1.0)
+      pos.z = pos.z + @offset.z * (@scale - 1.0) if pos.z < -0.5 * @offset.z * (@scale - 1.0)
     end
     
     pos.magnitude * (@scale ** (-@iterations))

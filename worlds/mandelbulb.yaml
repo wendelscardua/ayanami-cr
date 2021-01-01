@@ -1,37 +1,25 @@
 textures:
-  color:
-    type: solid_color
-    color:
-      - 0.0
-      - 0.0
-      - 0.5
-  light:
-    type: solid_color
-    color:
-      - 15.0
-      - 15.0
-      - 15.0
+  bulb:
+    type: u
+    factor: 10.0
 materials:
   color:
     type: lambertian
-    albedo: color
-  light:
-    type: diffuse_light
-    texture: light
+    albedo: bulb
 world:
   - type: mandelbulb
     material: color
     iterations: 20
     power: 8.0
 camera:
-  look_from: [1.6, 0.4, 3.6]
+  look_from: [1.6, 0.4, 2.0]
   look_at: [0.0, 0.0, 0.0]
   view_up:
     - 0.0
     - 1.0
     - 0.0
   vertical_fov: 32.0
-  aperture: 0.1
+  aperture: 0.0
   focus_distance_factor: 1.0
   start_time: 0.0
   end_time: 1.0
@@ -39,7 +27,7 @@ options:
   width: 300
   height: 300
   samples_per_pixel: 100
-  max_depth: 10
+  max_depth: 20
 background:
   type: color
-  color: [1.0, 1.0, 1.0]
+  color: [0.1, 0.1, 0.1]
