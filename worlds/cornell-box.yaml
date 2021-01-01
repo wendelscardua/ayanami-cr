@@ -131,16 +131,15 @@ camera:
     - 1.0
     - 0.0
   vertical_fov: 40.0
-  aperture: 0.1
+  aperture: 0.0
   focus_distance_factor: 1.0
-options:
-  width: 400
-  height: 400
-  samples_per_pixel: 32
-  max_depth: 50
   start_time: 0.0
   end_time: 1.0
-  background:
-    - 0.0
-    - 0.0
-    - 0.0
+options:
+  width: 600
+  height: 600
+  samples_per_pixel: 100
+  max_depth: 50
+background:
+  type: color
+  color: [0.0, 0.0, 0.0]
