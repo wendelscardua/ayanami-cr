@@ -16,6 +16,8 @@ abstract class Texture
     when "noise"
       scale = yaml["scale"].as_f
       Noise.new(scale)
+    when "u"
+      UTexture.new(yaml["factor"].as_f)
     when "image"
       filename = yaml["filename"].as_s
       ImageTexture.new(filename)
@@ -74,9 +76,19 @@ class Noise < Texture
   end
 end
 
+class UTexture < Texture
+  def initialize(@factor : Float64)
+  end
+
+  def value(u : Float64, v : Float64, p : V3)
+    val = (1 - u) ** @factor
+    V3.new(val, val, val)
+  end
+end
+
 class ImageTexture < Texture
   getter canvas : StumpyCore::Canvas,
-    width : Int32, height : Int32
+         width : Int32, height : Int32
 
   def initialize(filename : String)
     @canvas = StumpyPNG.read(filename)
