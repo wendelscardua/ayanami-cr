@@ -23,12 +23,16 @@ class Ayanami
                  @background : Background)
   end
 
-  def run(output : String)
+  def run(output : String, index : Int32? = nil)
     canvas = StumpyPNG::Canvas.new(@width, @height)
 
     (height - 1).downto(0) do |j|
       if j % 50 == 0
-        puts j
+        if index.nil?
+          puts j
+        else
+          puts "#{index}: #{j}"
+        end
         StumpyPNG.write(canvas, output) if j > 0
       end
       0.upto(width - 1) do |i|
@@ -142,6 +146,26 @@ class Ayanami
   end
 end
 
-config = YAML.parse(File.read(ARGV[0]))
+if ARGV[0] == "--movie"
+  # ayanami --movie renders/movies/ movies/foo-*.yaml
+  folder = ARGV[1]
+  configs = ARGV[2..-1]
+  channel = Channel(Nil).new(configs.size)
+  configs.sort.each_with_index do |config, index|
+    spawn do
+      puts "Starting index #{index}"
+      Ayanami.from_yaml(YAML.parse(File.read(config))).run(output: folder + ("/%04d.png" % index), index: index)
+      puts "End of index #{index}"
+      channel.send(nil)
+    end
+  end
+  configs.size.times do |i|
+    channel.receive
+    puts "Received #{i}"
+  end
+else
+  # ayanami input.yaml output.png
+  config = YAML.parse(File.read(ARGV[0]))
 
-Ayanami.from_yaml(config).run(output: ARGV[1])
+  Ayanami.from_yaml(config).run(output: ARGV[1])
+  end
