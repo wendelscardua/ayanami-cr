@@ -98,19 +98,25 @@ abstract class Hittable
       ConstantMedium.new(primitive,
         yaml["density"].as_f,
         materials[yaml["material"].as_s])
-    when "mandelbulb"
-      Mandelbulb.new(
-        materials[yaml["material"].as_s],
-        yaml["iterations"].as_i,
-        yaml["power"].as_f
-      )
-    when "menger_sponge"
-      MengerSponge.new(
-        materials[yaml["material"].as_s],
-        V3.from_yaml(yaml["offset"]),
-        yaml["iterations"].as_i,
-        yaml["scale"].as_f
-      )
+    when "distance_estimatable"
+      material = materials[yaml["material"].as_s]
+      estimator = DistanceEstimator.from_yaml(yaml["estimator"])
+      max_steps = if yaml["max_steps"]?
+                    yaml["max_steps"].as_i
+                  else
+                    1000
+                  end
+      step = if yaml["step"]?
+               yaml["step"].as_f
+             else
+               0.0001
+             end
+      min_distance = if yaml["min_distance"]?
+                       yaml["min_distance"].as_f
+                     else
+                       0.0001
+                     end
+      DistanceEstimatable.new(material, estimator, max_steps, step, min_distance)
     when "list"
       list = HittableList.new
       yaml["objects"].as_a.each do |object|
@@ -740,13 +746,8 @@ class TexturedTriangle < InterpolatedTriangle
   end
 end
 
-abstract class DistanceEstimatable < Hittable
-  MAX_STEPS = 500
-  EPSILON = 0.00001
-
-  property material : Material
-
-  def initialize(@material : Material)
+class DistanceEstimatable < Hittable
+  def initialize(@material : Material, @de : DistanceEstimator, @max_steps : Int32, @step : Float64, @min_distance : Float64)
   end
 
   def bounding_box(start_time, end_time)
@@ -754,58 +755,71 @@ abstract class DistanceEstimatable < Hittable
              V3.new(Float64::INFINITY, Float64::INFINITY, Float64::INFINITY))
   end
 
-  def distance_estimate(point) : Float64
-    raise "Not implemented"
-  end
-
   def hit(ray : Ray, t_min : Float, t_max : Float) : HitRecord?
-    step = EPSILON
-    minimum_distance = EPSILON
-
     total_distance = 0.0
 
     point = ray.origin
 
-    return nil if distance_estimate(point) < t_min
+    return nil if @de.distance_estimate(point) < t_min
 
+    ray_size = ray.direction.magnitude
+    
     steps = 0
-    MAX_STEPS.times do
+    @max_steps.times do
       point = ray.at(total_distance)
-      distance = distance_estimate(point)
-      total_distance += distance
+      distance = @de.distance_estimate(point)
+      total_distance += distance / ray_size
 
       return nil if total_distance >= t_max
 
-      break if distance < EPSILON
+      break if distance < @min_distance
 
       steps += 1
     end
 
-    x_dir = V3.new(step, 0.0, 0.0)
-    y_dir = V3.new(0.0, step, 0.0)
-    z_dir = V3.new(0.0, 0.0, step)
+    x_dir = V3.new(@step, 0.0, 0.0)
+    y_dir = V3.new(0.0, @step, 0.0)
+    z_dir = V3.new(0.0, 0.0, @step)
 
     normal = V3.new(
-      distance_estimate(point + x_dir) - distance_estimate(point - x_dir),
-      distance_estimate(point + y_dir) - distance_estimate(point - y_dir),
-      distance_estimate(point + z_dir) - distance_estimate(point - z_dir)
+      @de.distance_estimate(point + x_dir) - @de.distance_estimate(point - x_dir),
+      @de.distance_estimate(point + y_dir) - @de.distance_estimate(point - y_dir),
+      @de.distance_estimate(point + z_dir) - @de.distance_estimate(point - z_dir)
     ).normalize!
 
     return HitRecord.new(
       t: total_distance,
-      p: ray.at(total_distance),
+      p: point + normal * @min_distance * 20.0,
       ray: ray,
       normal: normal,
       material: @material,
-      u: steps.to_f / MAX_STEPS,
+      u: steps.to_f / @max_steps,
       v: 0.0
     )
   end
 end
 
-class Mandelbulb < DistanceEstimatable
-  def initialize(@material : Material, @iterations = 10, @power = 8.0)
-    super(@material)
+abstract class DistanceEstimator
+  def distance_estimate(pos) : Float64
+    raise "Not implemented"
+  end
+
+  def self.from_yaml(yaml : YAML::Any)
+    de_type = yaml["type"].as_s
+    case de_type
+    when "mandelbulb"
+      Mandelbulb.new(
+        yaml["iterations"].as_i,
+        yaml["power"].as_f
+      )
+    else
+      raise "Invalid type #{de_type}"
+    end
+  end
+end
+
+class Mandelbulb < DistanceEstimator
+  def initialize(@iterations = 10, @power = 8.0)
   end
 
   def distance_estimate(pos)
@@ -836,27 +850,5 @@ class Mandelbulb < DistanceEstimatable
     end
 
     0.5 * Math.log(r) * r / dr
-  end
-end
-
-class MengerSponge < DistanceEstimatable
-  ONE = V3.one
-
-  def initialize(@material : Material, @offset : V3, @iterations = 4, @scale = 3.0)
-  end
-
-  def distance_estimate(pos)
-    @iterations.times do
-      pos.x, pos.y, pos.z = { pos.x.abs, pos.y.abs, pos.z.abs }
-
-      pos.x, pos.y, pos.z = { pos.y, pos.x, pos.z } if pos.x < pos.y
-      pos.x, pos.y, pos.z  = { pos.x, pos.z, pos.y } if pos.y < pos.z
-      pos.x, pos.y, pos.z  = { pos.y, pos.x, pos.z } if pos.x < pos.y
-
-      pos = pos * @scale - @offset * (@scale - 1.0)
-      pos.z = pos.z + @offset.z * (@scale - 1.0) if pos.z < -0.5 * @offset.z * (@scale - 1.0)
-    end
-    
-    pos.magnitude * (@scale ** (-@iterations))
   end
 end
