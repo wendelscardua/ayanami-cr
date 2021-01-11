@@ -41,6 +41,10 @@ t_function =
       ]
       template['camera']['look_from'] = look_from
     end
+  when 'worlds/juliabulb.yaml'
+    lambda do |t|
+      template['world'][0]['estimator']['c'] = [2.0 * t - 1.0, 2.0 * t - 1.0, 0.15]
+    end
   when 'worlds/teapots.yaml'
     look_radius = ((1.5**2) + (3.0**2))**0.5
     lambda do |t|

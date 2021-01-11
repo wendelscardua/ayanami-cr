@@ -760,10 +760,10 @@ class DistanceEstimatable < Hittable
 
     point = ray.origin
 
-    return nil if @de.distance_estimate(point) < t_min
-
     ray_size = ray.direction.magnitude
-    
+
+    return nil if @de.distance_estimate(point) < t_min * ray_size
+
     steps = 0
     @max_steps.times do
       point = ray.at(total_distance)
@@ -812,6 +812,12 @@ abstract class DistanceEstimator
         yaml["iterations"].as_i,
         yaml["power"].as_f
       )
+    when "juliabulb"
+      Juliabulb.new(
+        yaml["iterations"].as_i,
+        yaml["power"].as_f,
+        V3.from_yaml(yaml["c"])
+      )
     else
       raise "Invalid type #{de_type}"
     end
@@ -846,6 +852,41 @@ class Mandelbulb < DistanceEstimator
         sin_theta * Math.cos(phi) * zr + pos.x,
         sin_theta * Math.sin(phi) * zr + pos.y,
         Math.cos(theta) * zr + pos.z
+      )
+    end
+
+    0.5 * Math.log(r) * r / dr
+  end
+end
+
+class Juliabulb < DistanceEstimator
+  def initialize(@iterations = 10, @power = 8.0, @c = V3.new(0.0, 0.0, 0.0))
+  end
+
+  def distance_estimate(pos)
+    z = pos
+    dr = 1.0
+    r = 0.0
+
+    @iterations.times do
+      r = z.magnitude
+      break if r > 1000.0
+
+      theta = Math.acos(z.z / r)
+      phi = Math.atan2(z.y, z.x)
+
+      dr = (r ** (@power - 1)) * @power * dr
+
+      zr = r ** @power
+      theta = theta*@power
+      phi = phi*@power
+
+      sin_theta = Math.sin(theta)
+
+      z = V3.new(
+        sin_theta * Math.cos(phi) * zr + @c.x,
+        sin_theta * Math.sin(phi) * zr + @c.y,
+        Math.cos(theta) * zr + @c.z
       )
     end
 
