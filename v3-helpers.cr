@@ -38,3 +38,9 @@ struct CrystalEdge::Vector3
     V3.new(yaml[0].as_f, yaml[1].as_f, yaml[2].as_f)
   end
 end
+
+struct CrystalEdge::Vector4
+  def self.from_yaml(yaml : YAML::Any)
+    V4.new(yaml[0].as_f, yaml[1].as_f, yaml[2].as_f, yaml[3].as_f)
+  end
+end

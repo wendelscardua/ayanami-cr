@@ -41,6 +41,10 @@ t_function =
       ]
       template['camera']['look_from'] = look_from
     end
+  when 'worlds/quadjulia.yaml'
+    lambda do |t|
+      template['world'][0]['estimator']['slice'] = t * 2.0 - 1.0
+    end
   when 'worlds/juliabulb.yaml'
     lambda do |t|
       template['world'][0]['estimator']['c'] = [2.0 * t - 1.0, 2.0 * t - 1.0, 0.15]

@@ -1,0 +1,39 @@
+textures:
+  u10:
+    type: u
+    factor: 10.0
+materials:
+  mat:
+    type: lambertian
+    albedo: u10
+world:
+  - type: distance_estimatable
+    material: mat
+    max_steps: 500
+    step: 0.0001
+    minimum_distance: 0.0001
+    estimator:
+      type: quadjulia
+      power: 4.0
+      iterations: 20
+      c: [0.2, 0.45, 0.64, 0.35]
+      slice: 0.23
+camera:
+  look_from: [2.6, 0.4, 3.6]
+  look_at: [0.0, 0.0, 0.0]
+  view_up:
+    - 0.0
+    - 1.0
+    - 0.0
+  vertical_fov: 32.0
+  aperture: 0.0
+  focus_distance_factor: 1.0
+  start_time: 0.0
+  end_time: 1.0
+options:
+  width: 800
+  height: 600
+  samples_per_pixel: 10
+  max_depth: 3
+background:
+  type: sky

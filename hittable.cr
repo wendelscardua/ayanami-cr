@@ -818,6 +818,13 @@ abstract class DistanceEstimator
         yaml["power"].as_f,
         V3.from_yaml(yaml["c"])
       )
+    when "quadjulia"
+      Quadjulia.new(
+        yaml["iterations"].as_i,
+        yaml["power"].as_f,
+        V4.from_yaml(yaml["c"]),
+        yaml["slice"].as_f
+      )
     else
       raise "Invalid type #{de_type}"
     end
@@ -891,5 +898,51 @@ class Juliabulb < DistanceEstimator
     end
 
     0.5 * Math.log(r) * r / dr
+  end
+end
+
+class Quadjulia < DistanceEstimator
+  def initialize(@iterations = 10, @power = 2.0, @c = V4.new(0.0, 0.0, 0.0), @slice = 0.0)
+  end
+
+  def distance_estimate(pos)
+    z = V4.new(pos.x, pos.y, pos.z, @slice)
+    dr = 1.0
+    r = 0.0
+
+    @iterations.times do
+      r = z.magnitude
+      break if r > 1000.0
+
+      dr = (r ** (@power - 1)) * @power * dr
+
+      z = pow(z, @power) + @c
+    end
+
+    0.5 * Math.log(r) * r / dr
+  end
+
+  def pow(z : V4, power : Float64)
+    exp(ln(z) * power)
+  end
+
+  def exp(z)
+    r  = Math.sqrt(z.y * z.y + z.z * z.z + z.w * z.w)
+    et = Math.exp(z.x)
+    s  = r >= 0.00001 ? et * Math.sin(r) / r : 0.0
+
+    V4.new(et * Math.cos(r),
+           z.y * s,
+           z.z * s,
+           z.w * s)
+  end
+
+  def ln(z)
+    r  = Math.sqrt(z.y * z.y + z.z * z.z + z.w * z.w)
+    t  = r > 0.00001 ? Math.atan2(r, z.x) / r : 0.0
+    V4.new(0.5 * Math.log(z.dot(z)),
+           z.y * t,
+           z.z * t,
+           z.w * t)
   end
 end

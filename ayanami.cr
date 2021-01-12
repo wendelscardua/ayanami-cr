@@ -13,6 +13,7 @@ require "./texture"
 require "./v3-helpers"
 
 alias V3 = CrystalEdge::Vector3
+alias V4 = CrystalEdge::Vector4
 
 class Ayanami
   property width, height, samples_per_pixel, max_depth, world, camera, background
