@@ -15,6 +15,13 @@ require "./v3-helpers"
 alias V3 = CrystalEdge::Vector3
 alias V4 = CrystalEdge::Vector4
 
+class PixelOutput
+  property i, color
+
+  def initialize(@i : Int32, @color : StumpyPNG::RGBA)
+  end
+end
+
 class Ayanami
   property width, height, samples_per_pixel, max_depth, world, camera, background
 
@@ -28,6 +35,7 @@ class Ayanami
     canvas = StumpyPNG::Canvas.new(@width, @height)
 
     (height - 1).downto(0) do |j|
+      channel = Channel(PixelOutput).new(@width)
       if j % 50 == 0
         if index.nil?
           puts j
@@ -37,18 +45,25 @@ class Ayanami
         StumpyPNG.write(canvas, output) if preview && j > 0
       end
       0.upto(width - 1) do |i|
-        color = samples_per_pixel.times.map do
-          u = (i + rand) / (width - 1)
-          v = (j + rand) / (height - 1)
-          ray = camera.ray(u, v)
-          ray_color(ray, world, max_depth)
-        end.sum / samples_per_pixel.to_f
+        spawn do
+          color = samples_per_pixel.times.map do
+            u = (i + rand) / (width - 1)
+            v = (j + rand) / (height - 1)
+            ray = camera.ray(u, v)
+            ray_color(ray, world, max_depth)
+          end.sum / samples_per_pixel.to_f
 
-        canvas[i, height - j - 1] = StumpyPNG::RGBA.from_rgb_n(clamp_color(color.x),
-          clamp_color(color.y),
-          clamp_color(color.z),
-          8)
+          channel.send(PixelOutput.new(i, StumpyPNG::RGBA.from_rgb_n(clamp_color(color.x),
+                                                                     clamp_color(color.y),
+                                                                     clamp_color(color.z),
+                                                                     8)))
+        end
       end
+      @width.times {
+        pixel_output = channel.receive
+        i = pixel_output.i
+        canvas[i, @height - j - 1] = pixel_output.color
+      }
     end
     StumpyPNG.write(canvas, output)
   end
@@ -145,28 +160,20 @@ class Ayanami
                 camera: camera,
                 background: Background.from_yaml(config["background"])
   end
-end
+  end
 
-if ARGV[0] == "--movie"
-  # ayanami --movie renders/movies/ movies/foo-*.yaml
-  folder = ARGV[1]
-  configs = ARGV[2..-1]
-  channel = Channel(Nil).new(configs.size)
-  configs.sort.each_with_index do |config, index|
-    spawn do
+  if ARGV[0] == "--movie"
+    # ayanami --movie renders/movies/ movies/foo-*.yaml
+    folder = ARGV[1]
+    configs = ARGV[2..-1]
+    configs.sort.each_with_index do |config, index|
       puts "Starting index #{index}"
       Ayanami.from_yaml(YAML.parse(File.read(config))).run(output: folder + ("/%04d.png" % index), index: index)
       puts "End of index #{index}"
-      channel.send(nil)
     end
-  end
-  configs.size.times do |i|
-    channel.receive
-    puts "Received #{i}"
-  end
-else
-  # ayanami input.yaml output.png
-  config = YAML.parse(File.read(ARGV[0]))
+  else
+    # ayanami input.yaml output.png
+    config = YAML.parse(File.read(ARGV[0]))
 
-  Ayanami.from_yaml(config).run(output: ARGV[1], preview: true)
-end
+    Ayanami.from_yaml(config).run(output: ARGV[1], preview: true)
+  end
