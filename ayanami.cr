@@ -24,7 +24,7 @@ class Ayanami
                  @background : Background)
   end
 
-  def run(output : String, index : Int32? = nil)
+  def run(output : String, index : Int32? = nil, preview = false)
     canvas = StumpyPNG::Canvas.new(@width, @height)
 
     (height - 1).downto(0) do |j|
@@ -34,7 +34,7 @@ class Ayanami
         else
           puts "#{index}: #{j}"
         end
-        StumpyPNG.write(canvas, output) if j > 0
+        StumpyPNG.write(canvas, output) if preview && j > 0
       end
       0.upto(width - 1) do |i|
         color = samples_per_pixel.times.map do
@@ -168,5 +168,5 @@ else
   # ayanami input.yaml output.png
   config = YAML.parse(File.read(ARGV[0]))
 
-  Ayanami.from_yaml(config).run(output: ARGV[1])
-  end
+  Ayanami.from_yaml(config).run(output: ARGV[1], preview: true)
+end
