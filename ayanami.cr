@@ -160,20 +160,20 @@ class Ayanami
                 camera: camera,
                 background: Background.from_yaml(config["background"])
   end
-  end
+end
 
-  if ARGV[0] == "--movie"
-    # ayanami --movie renders/movies/ movies/foo-*.yaml
-    folder = ARGV[1]
-    configs = ARGV[2..-1]
-    configs.sort.each_with_index do |config, index|
-      puts "Starting index #{index}"
-      Ayanami.from_yaml(YAML.parse(File.read(config))).run(output: folder + ("/%04d.png" % index), index: index)
-      puts "End of index #{index}"
-    end
-  else
-    # ayanami input.yaml output.png
-    config = YAML.parse(File.read(ARGV[0]))
-
-    Ayanami.from_yaml(config).run(output: ARGV[1], preview: true)
+if ARGV[0] == "--movie"
+  # ayanami --movie renders/movies/ movies/foo-*.yaml
+  folder = ARGV[1]
+  configs = ARGV[2..-1]
+  configs.sort.each_with_index do |config, index|
+    puts "Starting index #{index}"
+    Ayanami.from_yaml(YAML.parse(File.read(config))).run(output: folder + ("/%04d.png" % index), index: index)
+    puts "End of index #{index}"
   end
+else
+  # ayanami input.yaml output.png
+  config = YAML.parse(File.read(ARGV[0]))
+
+  Ayanami.from_yaml(config).run(output: ARGV[1], preview: true)
+end
